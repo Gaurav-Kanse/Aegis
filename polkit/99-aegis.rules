@@ -1,0 +1,9 @@
+/* Allow aegis daemon to invoke pkexec aegis oom-protect without password */
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.policykit.exec" &&
+        action.lookup("program") == "/usr/local/bin/aegis" &&
+        action.lookup("command_line") &&
+        action.lookup("command_line").indexOf("oom-protect") !== -1) {
+        return polkit.Result.YES;
+    }
+});

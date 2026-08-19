@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aegis"
+version = "0.1.0"
+description = "Event-driven kernel-backed system monitor and proactive resource daemon for Linux"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Gaurav"}
+]
+keywords = ["system-monitor", "cgroups", "oom-killer", "linux", "daemon"]
+classifiers = [
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+]
+dependencies = []
+
+[project.scripts]
+aegis = "aegis.main:main"
