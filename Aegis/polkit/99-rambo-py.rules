@@ -1,0 +1,9 @@
+/* Allow rambo-py daemon to invoke pkexec rambo-py oom-protect without password */
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.policykit.exec" &&
+        action.lookup("program") == "/usr/local/bin/rambo-py" &&
+        action.lookup("command_line") &&
+        action.lookup("command_line").indexOf("oom-protect") !== -1) {
+        return polkit.Result.YES;
+    }
+});

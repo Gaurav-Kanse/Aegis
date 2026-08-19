@@ -1,0 +1,12 @@
+[Unit]
+Description=RamboPy System Resource & OOM Monitor Daemon
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/rambo-py daemon
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=default.target
