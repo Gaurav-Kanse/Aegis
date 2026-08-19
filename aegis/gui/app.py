@@ -66,12 +66,12 @@ class AegisWindow(Adw.ApplicationWindow):
             self.page_processes, "processes", "Processes", "system-run-symbolic"
         )
 
-        self.page_analytics = AnalyticsPage()
+        self.page_analytics = AnalyticsPage(self.ipc_client)
         self.view_stack.add_titled_with_icon(
             self.page_analytics, "analytics", "Analytics", "utilities-system-monitor-symbolic"
         )
 
-        self.page_events = EventsPage()
+        self.page_events = EventsPage(self.ipc_client)
         self.view_stack.add_titled_with_icon(
             self.page_events, "events", "Events", "dialog-warning-symbolic"
         )
@@ -114,11 +114,21 @@ class AegisWindow(Adw.ApplicationWindow):
     def show_online(self, status: dict):
         self.overlay_stack.set_visible_child_name("online")
         self.page_overview.update_data(status)
+        self.page_analytics.update_sample(status)
         self.ipc_client.fetch_processes_async(self._on_processes_response)
+        self.ipc_client.fetch_events_async(100, self._on_events_response)
 
     def _on_processes_response(self, procs, err):
         if procs is not None and isinstance(procs, list):
             self.page_processes.update_processes(procs)
+
+    def _on_events_response(self, events, err):
+        if events is not None and isinstance(events, list):
+            self.page_events.append_events(events)
+
+    def _on_metrics_history_response(self, history, err):
+        if history is not None and isinstance(history, list):
+            self.page_analytics.set_metrics_history(history)
 
     def show_offline(self):
         self.overlay_stack.set_visible_child_name("offline")
@@ -153,6 +163,7 @@ class AegisApp(Adw.Application):
                 on_status_updated=self.window.show_online,
                 on_offline_state=self.window.show_offline
             )
+            self.ipc_client.fetch_metrics_history_async(300, self.window._on_metrics_history_response)
 
         self.window.present()
 

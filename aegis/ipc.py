@@ -54,11 +54,12 @@ class IPCServer:
                 test_sock.close()
                 print(f"[aegis-ipc] Warning: Active IPC server running on {self.socket_path}")
             except (ConnectionRefusedError, FileNotFoundError, OSError):
-                # Stale socket file, remove safely
-                try:
-                    os.unlink(self.socket_path)
-                except OSError:
-                    pass
+                pass
+            
+            try:
+                os.unlink(self.socket_path)
+            except OSError:
+                pass
 
         self.server_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.server_sock.bind(self.socket_path)
@@ -637,3 +638,6 @@ class IPCClient:
 
     def update_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
         return self._call("update_config", config)
+
+    def get_metrics_history(self, limit: int = 300) -> List[Dict[str, Any]]:
+        return self._call("get_metrics_history", {"limit": limit})

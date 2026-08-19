@@ -125,3 +125,27 @@ class GUIIPCClient:
                 GLib.idle_add(callback, None, ex)
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def fetch_events_async(self, limit: int = 100, callback: Callable[[Optional[Any], Optional[Exception]], None] = None):
+        def worker():
+            try:
+                res = self.client.get_events(limit=limit)
+                if callback:
+                    GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                if callback:
+                    GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def fetch_metrics_history_async(self, limit: int = 300, callback: Callable[[Optional[Any], Optional[Exception]], None] = None):
+        def worker():
+            try:
+                res = self.client.get_metrics_history(limit=limit)
+                if callback:
+                    GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                if callback:
+                    GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()
