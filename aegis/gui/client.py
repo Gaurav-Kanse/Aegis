@@ -55,3 +55,73 @@ class GUIIPCClient:
                 GLib.idle_add(callback, None, ex)
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def fetch_processes_async(self, callback: Callable[[Optional[Any], Optional[Exception]], None]):
+        def worker():
+            try:
+                res = self.client.get_processes()
+                GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def protect_process_async(self, name: str, callback: Callable[[Optional[Any], Optional[Exception]], None]):
+        def worker():
+            try:
+                res = self.client.protect_process(name)
+                GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def unprotect_process_async(self, name: str, callback: Callable[[Optional[Any], Optional[Exception]], None]):
+        def worker():
+            try:
+                res = self.client.unprotect_process(name)
+                GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def mark_expendable_async(self, name: str, callback: Callable[[Optional[Any], Optional[Exception]], None]):
+        def worker():
+            try:
+                res = self.client.mark_expendable(name)
+                GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def unmark_expendable_async(self, name: str, callback: Callable[[Optional[Any], Optional[Exception]], None]):
+        def worker():
+            try:
+                res = self.client.unmark_expendable(name)
+                GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def oom_protect_process_async(self, pid: int, callback: Callable[[Optional[Any], Optional[Exception]], None]):
+        def worker():
+            try:
+                res = self.client.oom_protect_process(pid=pid)
+                GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def terminate_process_async(self, pid: int, callback: Callable[[Optional[Any], Optional[Exception]], None]):
+        def worker():
+            try:
+                res = self.client.terminate_process(pid)
+                GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()

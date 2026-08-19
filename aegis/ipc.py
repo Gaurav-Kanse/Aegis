@@ -39,6 +39,7 @@ class IPCServer:
         self.server_sock: Optional[socket.socket] = None
         self.running = False
         self.thread: Optional[threading.Thread] = None
+        self.metrics_history: List[Dict[str, Any]] = []
 
     def start(self):
         os.makedirs(IPC_DIR, mode=0o700, exist_ok=True)
@@ -234,6 +235,22 @@ class IPCServer:
         elif mem_pct >= cfg.memory.soft_pct or max_temp >= cfg.temperature.warning or cpu_pct >= cfg.cpu.alert_pct:
             state = "WARNING"
 
+        sample = {
+            "timestamp": time.time(),
+            "cpu": round(cpu_pct, 1),
+            "memory": round(mem_pct, 1),
+            "temperature": round(max_temp, 1),
+            "disk": round(disks.get("/", 0.0), 1),
+            "network_rx": round(sum(v for k, v in nets.items() if k.endswith("_rx_mbps")), 2),
+            "network_tx": round(sum(v for k, v in nets.items() if k.endswith("_tx_mbps")), 2),
+            "psi_cpu": round(psi.get("some_avg10", 0.0), 1),
+            "psi_memory": round(psi.get("full_avg10", 0.0), 1),
+            "psi_io": 0.0
+        }
+        self.metrics_history.append(sample)
+        if len(self.metrics_history) > 3600:
+            self.metrics_history = self.metrics_history[-3600:]
+
         return {
             "health": health,
             "state": state,
@@ -249,6 +266,12 @@ class IPCServer:
             "battery": bats,
             "psi": {k: round(v, 1) for k, v in psi.items()}
         }
+
+    def _rpc_get_metrics_history(self, params: Dict[str, Any]) -> List[Dict[str, Any]]:
+        limit = params.get("limit", 300)
+        if not isinstance(limit, int) or limit <= 0:
+            limit = 300
+        return self.metrics_history[-limit:]
 
     def _rpc_get_processes(self, params: Dict[str, Any]) -> List[Dict[str, Any]]:
         cfg = self.daemon.cfg if self.daemon else load_config()
@@ -339,6 +362,7 @@ class IPCServer:
             save_config(cfg)
             if self.daemon:
                 self.daemon.cfg = cfg
+            record_event("process", "INFO", f"Protected process '{name}'", {"name": name})
 
         return {"protected": True, "name": name}
 
@@ -353,6 +377,7 @@ class IPCServer:
             save_config(cfg)
             if self.daemon:
                 self.daemon.cfg = cfg
+            record_event("process", "INFO", f"Unprotected process '{name}'", {"name": name})
 
         return {"unprotected": True, "name": name}
 
@@ -367,8 +392,66 @@ class IPCServer:
             save_config(cfg)
             if self.daemon:
                 self.daemon.cfg = cfg
+            record_event("process", "INFO", f"Marked process '{name}' as expendable", {"name": name})
 
         return {"expendable": True, "name": name}
+
+    def _rpc_unmark_expendable(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        name = params.get("name")
+        if not name or not isinstance(name, str):
+            raise IPCError("INVALID_PARAMS", "Parameter 'name' (string) is required")
+
+        cfg = self.daemon.cfg if self.daemon else load_config()
+        if name in cfg.expendable:
+            cfg.expendable.remove(name)
+            save_config(cfg)
+            if self.daemon:
+                self.daemon.cfg = cfg
+            record_event("process", "INFO", f"Removed expendable status from process '{name}'", {"name": name})
+
+        return {"unmarked_expendable": True, "name": name}
+
+    def _rpc_oom_protect_process(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        pid = params.get("pid")
+        name = params.get("name")
+
+        if not pid and not name:
+            raise IPCError("INVALID_PARAMS", "Either 'pid' or 'name' is required for oom_protect_process")
+
+        from aegis.oom import set_oom_score_adj, run_oom_protect_helper
+
+        cfg = self.daemon.cfg if self.daemon else load_config()
+
+        if pid and isinstance(pid, int):
+            if not os.path.exists(f"/proc/{pid}"):
+                raise IPCError("INVALID_PARAMS", f"Process PID {pid} does not exist")
+            
+            proc_name = "unknown"
+            try:
+                with open(f"/proc/{pid}/comm", "r") as f:
+                    proc_name = f.read().strip()
+                if proc_name not in cfg.protect:
+                    cfg.protect.append(proc_name)
+                    save_config(cfg)
+                    if self.daemon:
+                        self.daemon.cfg = cfg
+            except Exception:
+                pass
+
+            if not set_oom_score_adj(pid, -1000):
+                run_oom_protect_helper()
+            record_event("oom", "INFO", f"OOM protection (-1000) applied to process '{proc_name}' (PID {pid})", {"pid": pid, "name": proc_name})
+            return {"oom_protected": True, "pid": pid}
+
+        if name and isinstance(name, str):
+            if name not in cfg.protect:
+                cfg.protect.append(name)
+                save_config(cfg)
+                if self.daemon:
+                    self.daemon.cfg = cfg
+            run_oom_protect_helper()
+            record_event("oom", "INFO", f"OOM protection (-1000) applied to process '{name}'", {"name": name})
+            return {"oom_protected": True, "name": name}
 
     def _rpc_terminate_process(self, params: Dict[str, Any]) -> Dict[str, Any]:
         pid = params.get("pid")
@@ -537,6 +620,17 @@ class IPCClient:
 
     def mark_expendable(self, name: str) -> Dict[str, Any]:
         return self._call("mark_expendable", {"name": name})
+
+    def unmark_expendable(self, name: str) -> Dict[str, Any]:
+        return self._call("unmark_expendable", {"name": name})
+
+    def oom_protect_process(self, pid: int = None, name: str = None) -> Dict[str, Any]:
+        p = {}
+        if pid is not None:
+            p["pid"] = pid
+        if name is not None:
+            p["name"] = name
+        return self._call("oom_protect_process", p)
 
     def terminate_process(self, pid: int) -> Dict[str, Any]:
         return self._call("terminate_process", {"pid": pid})

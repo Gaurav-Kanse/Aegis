@@ -79,6 +79,17 @@ class TestAegisIPC(unittest.TestCase):
         cfg = self.client.get_config()
         self.assertIn("test_steam_game", cfg["expendable"])
 
+        res2 = self.client.unmark_expendable("test_steam_game")
+        self.assertTrue(res2.get("unmarked_expendable"))
+        cfg2 = self.client.get_config()
+        self.assertNotIn("test_steam_game", cfg2["expendable"])
+
+    def test_07b_oom_protect_process(self):
+        res = self.client.oom_protect_process(name="test_app_123")
+        self.assertTrue(res.get("oom_protected"))
+        cfg = self.client.get_config()
+        self.assertIn("test_app_123", cfg["protect"])
+
     def test_08_update_config(self):
         res = self.client.update_config({"memory": {"soft_pct": 88.5}})
         self.assertTrue(res.get("updated"))

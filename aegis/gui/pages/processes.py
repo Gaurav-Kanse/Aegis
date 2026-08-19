@@ -1,14 +1,185 @@
 import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
-from gi.repository import Gtk, Adw
+from gi.repository import Gtk, Adw, GLib
+from typing import List, Dict, Any, Optional
 
-class ProcessesPage(Adw.Bin):
-    def __init__(self):
-        super().__init__()
+from aegis.gui.widgets.process_row import ProcessRow
+from aegis.gui.client import GUIIPCClient
 
-        status_page = Adw.StatusPage()
-        status_page.set_icon_name("system-run-symbolic")
-        status_page.set_title("Real-Time Process Control")
-        status_page.set_description("Process ranking, protection flags, and controlled process termination are coming in Phase 3.")
-        self.set_child(status_page)
+SORT_OPTIONS = [
+    ("Score (High to Low)", "score_desc"),
+    ("CPU Usage (High to Low)", "cpu_desc"),
+    ("Memory (High to Low)", "rss_desc"),
+    ("Runtime (Longest First)", "runtime_desc"),
+    ("Process Name (A-Z)", "name_asc"),
+    ("PID (Ascending)", "pid_asc"),
+]
+
+class ProcessesPage(Gtk.Box):
+    def __init__(self, ipc_client: Optional[GUIIPCClient] = None):
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.ipc_client = ipc_client
+        self.raw_processes: List[Dict[str, Any]] = []
+
+        # Top Control Bar (Search + Sort)
+        ctrl_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        ctrl_bar.set_margin_start(16)
+        ctrl_bar.set_margin_end(16)
+        ctrl_bar.set_margin_top(12)
+        ctrl_bar.set_margin_bottom(12)
+        self.append(ctrl_bar)
+
+        # Search Entry
+        self.search_entry = Gtk.SearchEntry()
+        self.search_entry.set_placeholder_text("Search process by name or PID...")
+        self.search_entry.set_hexpand(True)
+        self.search_entry.connect("search-changed", self._on_search_or_sort_changed)
+        ctrl_bar.append(self.search_entry)
+
+        # Sort Label
+        sort_lbl = Gtk.Label(label="Sort:")
+        sort_lbl.add_css_class("dim-label")
+        ctrl_bar.append(sort_lbl)
+
+        # Sort DropDown
+        sort_titles = [t[0] for t in SORT_OPTIONS]
+        self.sort_dropdown = Gtk.DropDown.new_from_strings(sort_titles)
+        self.sort_dropdown.set_selected(0)  # Default: Score descending
+        self.sort_dropdown.connect("notify::selected", self._on_search_or_sort_changed)
+        ctrl_bar.append(self.sort_dropdown)
+
+        # Refresh Button
+        btn_refresh = Gtk.Button()
+        btn_refresh.set_icon_name("view-refresh-symbolic")
+        btn_refresh.set_tooltip_text("Refresh Process List")
+        btn_refresh.connect("clicked", lambda b: self.refresh_processes())
+        ctrl_bar.append(btn_refresh)
+
+        # Scrolled List Box Area
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_vexpand(True)
+        self.append(scrolled)
+
+        clamp = Adw.Clamp()
+        clamp.set_maximum_size(950)
+        scrolled.set_child(clamp)
+
+        self.list_box = Gtk.ListBox()
+        self.list_box.set_selection_mode(Gtk.SelectionMode.NONE)
+        self.list_box.add_css_class("boxed-list")
+        self.list_box.set_margin_start(16)
+        self.list_box.set_margin_end(16)
+        self.list_box.set_margin_bottom(24)
+        clamp.set_child(self.list_box)
+
+    def set_ipc_client(self, client: GUIIPCClient):
+        self.ipc_client = client
+
+    def update_processes(self, proc_list: List[Dict[str, Any]]):
+        self.raw_processes = proc_list
+        self._render_filtered_list()
+
+    def refresh_processes(self):
+        if self.ipc_client:
+            self.ipc_client.fetch_processes_async(self._on_processes_fetched)
+
+    def _on_processes_fetched(self, res, err):
+        if res is not None and isinstance(res, list):
+            self.update_processes(res)
+
+    def _on_search_or_sort_changed(self, *args):
+        self._render_filtered_list()
+
+    def _render_filtered_list(self):
+        # 1. Local Search Filter
+        query = self.search_entry.get_text().strip().lower()
+        filtered = []
+        for p in self.raw_processes:
+            pid_str = str(p.get("pid", ""))
+            name_str = p.get("name", "").lower()
+            if not query or query in name_str or query in pid_str:
+                filtered.append(p)
+
+        # 2. Sorting
+        sel_idx = self.sort_dropdown.get_selected()
+        sort_key = SORT_OPTIONS[sel_idx][1] if 0 <= sel_idx < len(SORT_OPTIONS) else "score_desc"
+
+        if sort_key == "score_desc":
+            filtered.sort(key=lambda x: x.get("score", 0.0), reverse=True)
+        elif sort_key == "cpu_desc":
+            filtered.sort(key=lambda x: x.get("cpu", 0.0), reverse=True)
+        elif sort_key == "rss_desc":
+            filtered.sort(key=lambda x: x.get("rss", 0), reverse=True)
+        elif sort_key == "runtime_desc":
+            filtered.sort(key=lambda x: x.get("runtime", 0), reverse=True)
+        elif sort_key == "name_asc":
+            filtered.sort(key=lambda x: x.get("name", "").lower())
+        elif sort_key == "pid_asc":
+            filtered.sort(key=lambda x: x.get("pid", 0))
+
+        # 3. Clear ListBox
+        while True:
+            child = self.list_box.get_first_child()
+            if not child:
+                break
+            self.list_box.remove(child)
+
+        # 4. Render Rows (limit to top 150 for rendering performance)
+        for p in filtered[:150]:
+            row = ProcessRow(p, self._handle_process_action)
+            self.list_box.append(row)
+
+    def _handle_process_action(self, action_type: str, proc_data: Dict[str, Any]):
+        if not self.ipc_client:
+            return
+
+        name = proc_data.get("name", "")
+        pid = proc_data.get("pid", 0)
+
+        if action_type == "protect":
+            self.ipc_client.protect_process_async(name, self._on_action_completed)
+        elif action_type == "unprotect":
+            self.ipc_client.unprotect_process_async(name, self._on_action_completed)
+        elif action_type == "mark_expendable":
+            self.ipc_client.mark_expendable_async(name, self._on_action_completed)
+        elif action_type == "unmark_expendable":
+            self.ipc_client.unmark_expendable_async(name, self._on_action_completed)
+        elif action_type == "oom_protect":
+            self.ipc_client.oom_protect_process_async(pid, self._on_action_completed)
+        elif action_type == "terminate":
+            self._show_terminate_confirmation(pid, name)
+
+    def _show_terminate_confirmation(self, pid: int, name: str):
+        # Libadwaita MessageDialog
+        dialog = Adw.MessageDialog.new(
+            self.get_native(),
+            "Terminate Process?",
+            f"Are you sure you want to terminate:\n\n    {name}\n    PID {pid}\n\nThis sends SIGTERM through Aegis."
+        )
+        dialog.add_response("cancel", "Cancel")
+        dialog.add_response("terminate", "Terminate")
+        dialog.set_response_appearance("terminate", Adw.ResponseAppearance.DESTRUCTIVE)
+        dialog.set_default_response("cancel")
+
+        dialog.connect("response", lambda d, resp: self._on_terminate_confirmed(resp, pid))
+        dialog.present()
+
+    def _on_terminate_confirmed(self, response_id: str, pid: int):
+        if response_id == "terminate" and self.ipc_client:
+            self.ipc_client.terminate_process_async(pid, self._on_action_completed)
+
+    def _on_action_completed(self, res, err):
+        if err is not None:
+            err_msg = str(err)
+            self._show_error_dialog("Action Failed", err_msg)
+        else:
+            # Refresh list immediately after successful action
+            self.refresh_processes()
+
+    def _show_error_dialog(self, title: str, message: str):
+        dialog = Adw.MessageDialog.new(self.get_native(), title, message)
+        dialog.add_response("ok", "OK")
+        dialog.set_default_response("ok")
+        dialog.present()

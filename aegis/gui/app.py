@@ -61,7 +61,7 @@ class AegisWindow(Adw.ApplicationWindow):
             self.page_overview, "overview", "Overview", "security-high-symbolic"
         )
 
-        self.page_processes = ProcessesPage()
+        self.page_processes = ProcessesPage(self.ipc_client)
         self.view_stack.add_titled_with_icon(
             self.page_processes, "processes", "Processes", "system-run-symbolic"
         )
@@ -114,6 +114,11 @@ class AegisWindow(Adw.ApplicationWindow):
     def show_online(self, status: dict):
         self.overlay_stack.set_visible_child_name("online")
         self.page_overview.update_data(status)
+        self.ipc_client.fetch_processes_async(self._on_processes_response)
+
+    def _on_processes_response(self, procs, err):
+        if procs is not None and isinstance(procs, list):
+            self.page_processes.update_processes(procs)
 
     def show_offline(self):
         self.overlay_stack.set_visible_child_name("offline")
