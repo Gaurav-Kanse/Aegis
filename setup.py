@@ -7,6 +7,7 @@ setup(
     entry_points={
         "console_scripts": [
             "aegis=aegis.main:main",
+            "aegis-gui=aegis.gui.app:run_gui",
         ],
     },
 )

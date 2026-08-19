@@ -16,6 +16,7 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
+    subparsers.add_parser("gui", help="Start the Aegis GTK4 + Libadwaita desktop application")
     subparsers.add_parser("daemon", help="Start the aegis event-driven daemon")
     subparsers.add_parser("top", help="One-shot view of system stats and top RAM consumers")
     subparsers.add_parser("stats", help="Live interactive system dashboard (TUI)")
@@ -50,7 +51,10 @@ def main():
 
     args = parser.parse_args()
 
-    if args.command == "daemon":
+    if args.command == "gui":
+        from aegis.gui.app import run_gui
+        run_gui([sys.argv[0]])
+    elif args.command == "daemon":
         d = Daemon()
         d.run()
     elif args.command == "top":

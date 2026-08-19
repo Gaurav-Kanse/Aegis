@@ -93,3 +93,22 @@ Candidate processes are ranked using a multi-factor score:
 $$\text{score} = 0.6 \cdot \text{rss}_{\text{norm}} + 0.3 \cdot \text{cpu}_{\text{norm}} + 0.1 \cdot \text{runtime}_{\text{norm}} + 0.3 (\text{interactive}) + 0.2 (\text{expendable})$$
 
 System processes, window managers, IDEs, and protected apps are blacklisted and never targeted.
+
+---
+
+## 🔌 IPC Layer
+
+Aegis daemon hosts a Unix Domain Socket JSON-RPC server for remote control and GUI integration.
+
+* **Socket Location**: `~/.local/state/aegis/ipc.sock` (mode `0600`)
+* **Protocol**: Newline-delimited JSON-RPC requests & responses.
+* **Available RPC Methods**:
+  * Read: `get_status`, `get_processes`, `get_events`, `get_config`
+  * Control: `protect_process`, `unprotect_process`, `mark_expendable`, `terminate_process`
+  * Config: `update_config`
+
+### Testing the IPC Layer
+```bash
+python3 tests/test_ipc.py
+```
+

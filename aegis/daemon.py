@@ -20,6 +20,8 @@ from aegis.watchers.disk import DiskWatcher
 from aegis.watchers.net import NetWatcher
 from aegis.watchers.battery import BatteryWatcher
 
+from aegis.ipc import IPCServer
+
 class Daemon:
     def __init__(self):
         self.cfg = load_config()
@@ -27,12 +29,16 @@ class Daemon:
         self.stop_event = threading.Event()
         self.total_ram_bytes = total_ram_kb() * 1024
         self.last_kill_time = 0.0
+        self.ipc_server = IPCServer(self)
 
     def run(self):
         print(f"[aegis] Daemon starting — soft {self.cfg.memory.soft_pct:.0f}% | hard {self.cfg.memory.hard_pct:.0f}% | max {self.cfg.memory.max_pct:.0f}%")
         
         signal.signal(signal.SIGINT, self._handle_signal)
         signal.signal(signal.SIGTERM, self._handle_signal)
+
+        # Start IPC Server
+        self.ipc_server.start()
 
         if self.cfg.kill.oom_prefer:
             n = mark_expendable_processes(self.cfg.expendable)
@@ -64,6 +70,9 @@ class Daemon:
         print("[aegis] Daemon running. Press Ctrl+C to stop.")
         while not self.stop_event.is_set():
             time.sleep(1)
+
+        # Stop IPC server & restore cgroup limits
+        self.ipc_server.stop()
 
         for w in watchers:
             if hasattr(w, "cgroup_mgr"):
