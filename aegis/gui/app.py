@@ -76,7 +76,7 @@ class AegisWindow(Adw.ApplicationWindow):
             self.page_events, "events", "Events", "dialog-warning-symbolic"
         )
 
-        self.page_protection = ProtectionPage()
+        self.page_protection = ProtectionPage(self.ipc_client)
         self.view_stack.add_titled_with_icon(
             self.page_protection, "protection", "Protection", "emblem-readonly-symbolic"
         )
@@ -117,14 +117,20 @@ class AegisWindow(Adw.ApplicationWindow):
         self.page_analytics.update_sample(status)
         self.ipc_client.fetch_processes_async(self._on_processes_response)
         self.ipc_client.fetch_events_async(100, self._on_events_response)
+        self.ipc_client.fetch_protection_async(self._on_protection_response)
 
     def _on_processes_response(self, procs, err):
         if procs is not None and isinstance(procs, list):
             self.page_processes.update_processes(procs)
+            self.page_protection.update_active_processes(procs)
 
     def _on_events_response(self, events, err):
         if events is not None and isinstance(events, list):
             self.page_events.append_events(events)
+
+    def _on_protection_response(self, prot, err):
+        if prot is not None and isinstance(prot, dict):
+            self.page_protection.update_protection(prot.get("protected", []), prot.get("expendable", []))
 
     def _on_metrics_history_response(self, history, err):
         if history is not None and isinstance(history, list):

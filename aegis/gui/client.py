@@ -86,10 +86,10 @@ class GUIIPCClient:
 
         threading.Thread(target=worker, daemon=True).start()
 
-    def mark_expendable_async(self, name: str, callback: Callable[[Optional[Any], Optional[Exception]], None]):
+    def mark_expendable_async(self, name: str, callback: Callable[[Optional[Any], Optional[Exception]], None], force: bool = False):
         def worker():
             try:
-                res = self.client.mark_expendable(name)
+                res = self.client.mark_expendable(name, force=force)
                 GLib.idle_add(callback, res, None)
             except Exception as ex:
                 GLib.idle_add(callback, None, ex)
@@ -147,5 +147,15 @@ class GUIIPCClient:
             except Exception as ex:
                 if callback:
                     GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def fetch_protection_async(self, callback: Callable[[Optional[Any], Optional[Exception]], None]):
+        def worker():
+            try:
+                res = self.client.get_protection()
+                GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                GLib.idle_add(callback, None, ex)
 
         threading.Thread(target=worker, daemon=True).start()

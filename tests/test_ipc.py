@@ -90,6 +90,31 @@ class TestAegisIPC(unittest.TestCase):
         cfg = self.client.get_config()
         self.assertIn("test_app_123", cfg["protect"])
 
+    def test_07c_protection_conflicts_and_get_protection(self):
+        # Test get_protection RPC
+        prot = self.client.get_protection()
+        self.assertIn("protected", prot)
+        self.assertIn("expendable", prot)
+
+        # Protect app
+        self.client.protect_process("conflict_app")
+
+        # Marking protected app as expendable without force should raise PROTECTION_CONFLICT
+        with self.assertRaises(IPCError) as ctx:
+            self.client.mark_expendable("conflict_app", force=False)
+        self.assertEqual(ctx.exception.code, "PROTECTION_CONFLICT")
+
+        # Marking with force=True should succeed and remove from protected list
+        res = self.client.mark_expendable("conflict_app", force=True)
+        self.assertTrue(res.get("expendable"))
+
+        prot2 = self.client.get_protection()
+        self.assertIn("conflict_app", prot2["expendable"])
+        self.assertNotIn("conflict_app", prot2["protected"])
+
+        # Clean up
+        self.client.unmark_expendable("conflict_app")
+
     def test_08_update_config(self):
         res = self.client.update_config({"memory": {"soft_pct": 88.5}})
         self.assertTrue(res.get("updated"))

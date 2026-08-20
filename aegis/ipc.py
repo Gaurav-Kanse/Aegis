@@ -352,25 +352,47 @@ class IPCServer:
             }
         }
 
+    def _rpc_get_protection(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        cfg = self.daemon.cfg if self.daemon else load_config()
+        return {
+            "protected": list(cfg.protect),
+            "expendable": list(cfg.expendable)
+        }
+
     def _rpc_protect_process(self, params: Dict[str, Any]) -> Dict[str, Any]:
         name = params.get("name")
-        if not name or not isinstance(name, str):
-            raise IPCError("INVALID_PARAMS", "Parameter 'name' (string) is required")
+        if not name or not isinstance(name, str) or not name.strip() or len(name.strip()) > 128:
+            raise IPCError("INVALID_PARAMS", "Valid process name string is required")
+        name = name.strip()
 
         cfg = self.daemon.cfg if self.daemon else load_config()
-        if name not in cfg.protect:
-            cfg.protect.append(name)
-            save_config(cfg)
-            if self.daemon:
-                self.daemon.cfg = cfg
-            record_event("process", "INFO", f"Protected process '{name}'", {"name": name})
+        
+        if name in cfg.protect:
+            return {"protected": True, "already_protected": True, "name": name, "message": f"'{name}' is already protected"}
 
-        return {"protected": True, "name": name}
+        # Conflict check: remove from expendable if present
+        was_expendable = False
+        if name in cfg.expendable:
+            cfg.expendable.remove(name)
+            was_expendable = True
+
+        cfg.protect.append(name)
+        save_config(cfg)
+        if self.daemon:
+            self.daemon.cfg = cfg
+
+        msg = f"Protected process '{name}'"
+        if was_expendable:
+            msg += " (removed from expendables)"
+        record_event("process", "INFO", msg, {"name": name})
+
+        return {"protected": True, "name": name, "was_expendable": was_expendable}
 
     def _rpc_unprotect_process(self, params: Dict[str, Any]) -> Dict[str, Any]:
         name = params.get("name")
         if not name or not isinstance(name, str):
             raise IPCError("INVALID_PARAMS", "Parameter 'name' (string) is required")
+        name = name.strip()
 
         cfg = self.daemon.cfg if self.daemon else load_config()
         if name in cfg.protect:
@@ -384,10 +406,19 @@ class IPCServer:
 
     def _rpc_mark_expendable(self, params: Dict[str, Any]) -> Dict[str, Any]:
         name = params.get("name")
-        if not name or not isinstance(name, str):
-            raise IPCError("INVALID_PARAMS", "Parameter 'name' (string) is required")
+        force = bool(params.get("force", False))
+        if not name or not isinstance(name, str) or not name.strip() or len(name.strip()) > 128:
+            raise IPCError("INVALID_PARAMS", "Valid process name string is required")
+        name = name.strip()
 
         cfg = self.daemon.cfg if self.daemon else load_config()
+
+        # Protection conflict check
+        if name in cfg.protect:
+            if not force:
+                raise IPCError("PROTECTION_CONFLICT", f"Process '{name}' is currently protected. Remove protection before marking it expendable.")
+            cfg.protect.remove(name)
+
         if name not in cfg.expendable:
             cfg.expendable.append(name)
             save_config(cfg)
@@ -613,14 +644,17 @@ class IPCClient:
     def get_config(self) -> Dict[str, Any]:
         return self._call("get_config")
 
+    def get_protection(self) -> Dict[str, Any]:
+        return self._call("get_protection")
+
     def protect_process(self, name: str) -> Dict[str, Any]:
         return self._call("protect_process", {"name": name})
 
     def unprotect_process(self, name: str) -> Dict[str, Any]:
         return self._call("unprotect_process", {"name": name})
 
-    def mark_expendable(self, name: str) -> Dict[str, Any]:
-        return self._call("mark_expendable", {"name": name})
+    def mark_expendable(self, name: str, force: bool = False) -> Dict[str, Any]:
+        return self._call("mark_expendable", {"name": name, "force": force})
 
     def unmark_expendable(self, name: str) -> Dict[str, Any]:
         return self._call("unmark_expendable", {"name": name})
