@@ -17,17 +17,71 @@ class EventsPage(Gtk.Box):
         self.events: List[Dict[str, Any]] = []
         self.seen_ids: Set[str] = set()
 
-        # Top Control Bar (Search, Filter, Actions)
+        # Scrolled Container
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_vexpand(True)
+        self.append(scrolled)
+
+        clamp = Adw.Clamp()
+        clamp.set_maximum_size(1000)
+        scrolled.set_child(clamp)
+
+        main_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
+        main_vbox.set_margin_start(20)
+        main_vbox.set_margin_end(20)
+        main_vbox.set_margin_top(20)
+        main_vbox.set_margin_bottom(28)
+        clamp.set_child(main_vbox)
+
+        # Header Title
+        hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+
+        lbl_title = Gtk.Label(label="System Event Log")
+        lbl_title.add_css_class("title-1")
+        lbl_title.add_css_class("bold")
+        lbl_title.set_halign(Gtk.Align.START)
+        title_vbox.append(lbl_title)
+
+        lbl_sub = Gtk.Label(label="Audit trail of resource warnings, kill actions, and protection events")
+        lbl_sub.add_css_class("aegis-subtext")
+        lbl_sub.set_halign(Gtk.Align.START)
+        title_vbox.append(lbl_sub)
+
+        hdr_box.append(title_vbox)
+
+        spacer = Gtk.Box()
+        spacer.set_hexpand(True)
+        hdr_box.append(spacer)
+
+        btn_clear = Gtk.Button(label="Clear Log")
+        btn_clear.add_css_class("action-btn-normal")
+        btn_clear.connect("clicked", self._on_clear_clicked)
+        hdr_box.append(btn_clear)
+
+        btn_refresh = Gtk.Button()
+        btn_refresh.set_icon_name("view-refresh-symbolic")
+        btn_refresh.set_tooltip_text("Refresh Events")
+        btn_refresh.connect("clicked", lambda b: self.refresh_events())
+        hdr_box.append(btn_refresh)
+
+        main_vbox.append(hdr_box)
+
+        # Controls Card (Search + Severity Filter)
+        ctrl_card = Gtk.Frame()
+        ctrl_card.add_css_class("aegis-card")
+
         ctrl_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        ctrl_bar.set_margin_start(16)
-        ctrl_bar.set_margin_end(16)
-        ctrl_bar.set_margin_top(12)
-        ctrl_bar.set_margin_bottom(12)
-        self.append(ctrl_bar)
+        ctrl_bar.set_margin_start(14)
+        ctrl_bar.set_margin_end(14)
+        ctrl_bar.set_margin_top(10)
+        ctrl_bar.set_margin_bottom(10)
+        ctrl_card.set_child(ctrl_bar)
 
         # Search Entry
         self.search_entry = Gtk.SearchEntry()
-        self.search_entry.set_placeholder_text("Search events (message, source, PID)...")
+        self.search_entry.set_placeholder_text("Search event messages, sources, or details...")
         self.search_entry.set_hexpand(True)
         self.search_entry.connect("search-changed", self._on_filter_changed)
         ctrl_bar.append(self.search_entry)
@@ -38,52 +92,19 @@ class EventsPage(Gtk.Box):
         self.severity_dropdown.connect("notify::selected", self._on_filter_changed)
         ctrl_bar.append(self.severity_dropdown)
 
-        # Clear View Button
-        btn_clear = Gtk.Button(label="Clear View")
-        btn_clear.add_css_class("flat")
-        btn_clear.connect("clicked", self._on_clear_clicked)
-        ctrl_bar.append(btn_clear)
+        main_vbox.append(ctrl_card)
 
-        # Refresh Button
-        btn_refresh = Gtk.Button()
-        btn_refresh.set_icon_name("view-refresh-symbolic")
-        btn_refresh.set_tooltip_text("Refresh Events")
-        btn_refresh.connect("clicked", lambda b: self.refresh_events())
-        ctrl_bar.append(btn_refresh)
-
-        # Main Overlay for List + "New Events" Floating Pill
-        overlay = Gtk.Overlay()
-        overlay.set_vexpand(True)
-        self.append(overlay)
-
-        # Scrolled Area
-        self.scrolled = Gtk.ScrolledWindow()
-        self.scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        overlay.set_child(self.scrolled)
-
-        clamp = Adw.Clamp()
-        clamp.set_maximum_size(950)
-        self.scrolled.set_child(clamp)
+        # List Box Container
+        list_card = Gtk.Frame()
+        list_card.add_css_class("aegis-card")
 
         self.list_box = Gtk.ListBox()
         self.list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
         self.list_box.add_css_class("boxed-list")
-        self.list_box.set_margin_start(16)
-        self.list_box.set_margin_end(16)
-        self.list_box.set_margin_bottom(24)
         self.list_box.connect("row-activated", self._on_row_activated)
-        clamp.set_child(self.list_box)
+        list_card.set_child(self.list_box)
 
-        # Floating "New Events" Button
-        self.btn_new_events = Gtk.Button(label="⬇ New Events")
-        self.btn_new_events.add_css_class("pill")
-        self.btn_new_events.add_css_class("suggested-action")
-        self.btn_new_events.set_halign(Gtk.Align.CENTER)
-        self.btn_new_events.set_valign(Gtk.Align.END)
-        self.btn_new_events.set_margin_bottom(20)
-        self.btn_new_events.set_visible(False)
-        self.btn_new_events.connect("clicked", self._scroll_to_bottom)
-        overlay.add_overlay(self.btn_new_events)
+        main_vbox.append(list_card)
 
     def set_ipc_client(self, client: GUIIPCClient):
         self.ipc_client = client
@@ -103,134 +124,98 @@ class EventsPage(Gtk.Box):
                 added_new = True
 
         if added_new:
-            # Enforce 500 max limit in memory
-            if len(self.events) > 500:
-                overflow = len(self.events) - 500
-                trimmed = self.events[:overflow]
-                for t in trimmed:
-                    self.seen_ids.discard(t.get("id"))
-                self.events = self.events[overflow:]
-
-            self._render_events()
+            # Keep sorted descending by timestamp
+            self.events.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+            self._render_filtered_events()
 
     def _on_events_fetched(self, res, err):
         if res is not None and isinstance(res, list):
             self.append_events(res)
 
+    def _on_filter_changed(self, *args):
+        self._render_filtered_events()
+
     def _on_clear_clicked(self, button):
         self.events.clear()
         self.seen_ids.clear()
-        self._render_events()
+        self._render_filtered_events()
 
-    def _on_filter_changed(self, *args):
-        self._render_events()
-
-    def _render_events(self):
-        query = self.search_entry.get_text().strip().lower()
-        sel_idx = self.severity_dropdown.get_selected()
-        sev_filter = SEVERITY_OPTIONS[sel_idx] if 0 <= sel_idx < len(SEVERITY_OPTIONS) else "All Severities"
-
-        filtered = []
-        for e in self.events:
-            msg = e.get("message", "").lower()
-            src = e.get("source", "").lower()
-            sev = e.get("severity", "").upper()
-            vals_str = str(e.get("values", "")).lower()
-
-            if query and not (query in msg or query in src or query in sev or query in vals_str):
-                continue
-
-            if sev_filter == "INFO" and sev != "INFO":
-                continue
-            elif sev_filter == "WARNING" and sev != "WARNING":
-                continue
-            elif sev_filter == "CRITICAL / ERROR" and sev not in ("CRITICAL", "ERROR", "EMERGENCY"):
-                continue
-
-            filtered.append(e)
-
-        # Clear existing list box children
+    def _render_filtered_events(self):
+        # 1. Clear ListBox
         while True:
             child = self.list_box.get_first_child()
             if not child:
                 break
             self.list_box.remove(child)
 
-        # Render rows
-        for e in filtered:
-            row = self._create_event_row(e)
+        query = self.search_entry.get_text().strip().lower()
+        sev_idx = self.severity_dropdown.get_selected()
+
+        for ev in self.events:
+            msg = str(ev.get("message", ""))
+            source = str(ev.get("source", ""))
+            severity = str(ev.get("severity", "INFO")).upper()
+
+            # Filter Search Query
+            if query and query not in msg.lower() and query not in source.lower():
+                continue
+
+            # Filter Severity
+            if sev_idx == 1 and severity != "INFO":
+                continue
+            elif sev_idx == 2 and severity != "WARNING":
+                continue
+            elif sev_idx == 3 and severity not in ("CRITICAL", "ERROR", "EMERGENCY"):
+                continue
+
+            row = self._create_event_row(ev)
             self.list_box.append(row)
 
-        # Auto-scroll or show floating pill
-        adj = self.scrolled.get_vadjustment()
-        if adj:
-            val = adj.get_value()
-            max_val = adj.get_upper() - adj.get_page_size()
-            if max_val - val < 80 or max_val <= 0:
-                GLib.idle_add(self._scroll_to_bottom, None)
-            else:
-                self.btn_new_events.set_visible(True)
-
-    def _create_event_row(self, evt: Dict[str, Any]) -> Adw.ActionRow:
-        row = Adw.ActionRow()
-        row.evt_data = evt
-
-        ts_str = evt.get("timestamp", "")
-        try:
-            dt = datetime.fromisoformat(ts_str)
-            time_display = dt.strftime("%H:%M:%S")
-        except Exception:
-            time_display = ts_str[:8] if len(ts_str) >= 8 else ts_str
-
-        sev = evt.get("severity", "INFO").upper()
-        src = evt.get("source", "system").upper()
-        msg = evt.get("message", "")
-
-        row.set_title(msg)
-        row.set_subtitle(f"Time: {time_display}  •  Source: {src}")
-
-        # Severity Badge
-        tag = Gtk.Label(label=sev)
-        tag.add_css_class("caption")
-        tag.add_css_class("bold")
-        tag.set_valign(Gtk.Align.CENTER)
-
-        if sev in ("CRITICAL", "EMERGENCY", "ERROR"):
-            tag.add_css_class("error")
-        elif sev == "WARNING":
-            tag.add_css_class("warning")
+    def _create_event_row(self, ev: Dict[str, Any]) -> Adw.ActionRow:
+        ts = ev.get("timestamp", "")
+        if "T" in ts:
+            time_part = ts.split("T")[-1][:8]
         else:
-            tag.add_css_class("accent")
+            time_part = str(ts)[:8]
 
-        row.add_suffix(tag)
+        source = str(ev.get("source", "system")).upper()
+        severity = str(ev.get("severity", "INFO")).upper()
+        msg = str(ev.get("message", ""))
+
+        row = Adw.ActionRow()
+        row.set_title(msg)
+        row.set_subtitle(f"Time: {time_part}  •  Source: {source}  •  Severity: {severity}")
+
+        badge = Gtk.Label(label=severity)
+        badge.add_css_class("status-badge")
+        if severity in ("CRITICAL", "ERROR", "EMERGENCY"):
+            badge.add_css_class("critical")
+        elif severity == "WARNING":
+            badge.add_css_class("warning")
+        else:
+            badge.add_css_class("normal")
+
+        badge.set_valign(Gtk.Align.CENTER)
+        row.add_suffix(badge)
+
+        row._event_data = ev
         return row
 
-    def _scroll_to_bottom(self, button=None):
-        adj = self.scrolled.get_vadjustment()
-        if adj:
-            adj.set_value(adj.get_upper() - adj.get_page_size())
-        self.btn_new_events.set_visible(False)
+    def _on_row_activated(self, listbox, row):
+        if hasattr(row, "_event_data"):
+            ev = row._event_data
+            details = ev.get("details") or {}
+            detail_str = "\n".join(f"  • {k}: {v}" for k, v in details.items()) if details else "None"
 
-    def _on_row_activated(self, list_box, row):
-        evt = getattr(row, "evt_data", None)
-        if not evt:
-            return
+            body = (
+                f"Source: {ev.get('source')}\n"
+                f"Severity: {ev.get('severity')}\n"
+                f"Timestamp: {ev.get('timestamp')}\n\n"
+                f"Message:\n{ev.get('message')}\n\n"
+                f"Details:\n{detail_str}"
+            )
 
-        msg = evt.get("message", "")
-        sev = evt.get("severity", "INFO")
-        src = evt.get("source", "system")
-        ts = evt.get("timestamp", "")
-        vals = evt.get("values", {})
-
-        detail_text = f"Time:\n{ts}\n\nSeverity:\n{sev}\n\nSource:\n{src}\n\nMessage:\n{msg}"
-        if vals:
-            detail_text += f"\n\nDetails / Metadata:\n{vals}"
-
-        dialog = Adw.MessageDialog.new(
-            self.get_native(),
-            "Event Details",
-            detail_text
-        )
-        dialog.add_response("close", "Close")
-        dialog.set_default_response("close")
-        dialog.present()
+            dialog = Adw.MessageDialog.new(self.get_native(), "Event Details", body)
+            dialog.add_response("ok", "Close")
+            dialog.set_default_response("ok")
+            dialog.present()

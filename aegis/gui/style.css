@@ -1,0 +1,208 @@
+/* Aegis Nothing-Inspired Monochrome Design System */
+
+window, .main-window {
+    background-color: #0d0d0f;
+    color: #f4f4f5;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    background-color: #121215;
+    border-right: 1px solid #222226;
+}
+
+.sidebar-title {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #ffffff;
+}
+
+.sidebar-subtitle {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: #71717a;
+    text-transform: uppercase;
+}
+
+.sidebar-button {
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #a1a1aa;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 150ms ease;
+}
+
+.sidebar-button:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+.sidebar-button.active {
+    background-color: #27272a;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Cards & Surfaces */
+.aegis-card, .card {
+    background-color: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.aegis-card-header {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #a1a1aa;
+    text-transform: uppercase;
+}
+
+.aegis-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.aegis-value-large {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+}
+
+.aegis-value-medium {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.aegis-subtext {
+    font-size: 12px;
+    color: #71717a;
+}
+
+/* Status Badges */
+.status-badge {
+    border-radius: 9999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.status-badge.normal, .status-badge.protected {
+    background-color: rgba(74, 222, 128, 0.12);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.status-badge.warning {
+    background-color: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.status-badge.critical, .status-badge.emergency {
+    background-color: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.status-badge.expendable {
+    background-color: rgba(161, 161, 170, 0.12);
+    color: #a1a1aa;
+    border: 1px solid rgba(161, 161, 170, 0.3);
+}
+
+/* Level Bar Styling */
+levelbar block.filled {
+    background-color: #e4e4e7;
+    border-radius: 4px;
+}
+
+levelbar block.empty {
+    background-color: #27272a;
+    border-radius: 4px;
+}
+
+/* Process Table Rows */
+.process-row {
+    background-color: #18181b;
+    border-bottom: 1px solid #27272a;
+    padding: 10px 14px;
+}
+
+.process-row:hover {
+    background-color: #202024;
+}
+
+/* Search and Inputs */
+entry, searchentry {
+    background-color: #18181b;
+    border: 1px solid #27272a;
+    border-radius: 8px;
+    color: #ffffff;
+}
+
+entry:focus, searchentry:focus {
+    border-color: #52525b;
+}
+
+/* Action Buttons */
+button.action-btn-normal {
+    background-color: #27272a;
+    color: #f4f4f5;
+    border: 1px solid #3f3f46;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+button.action-btn-normal:hover {
+    background-color: #3f3f46;
+    color: #ffffff;
+}
+
+button.action-btn-danger {
+    background-color: rgba(248, 113, 113, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+button.action-btn-danger:hover {
+    background-color: rgba(248, 113, 113, 0.25);
+    color: #ffffff;
+}
+
+/* Tab Filter Buttons */
+.tab-btn {
+    background-color: transparent;
+    border: 1px solid #27272a;
+    border-radius: 6px;
+    color: #a1a1aa;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+}
+
+.tab-btn:hover {
+    color: #ffffff;
+    border-color: #3f3f46;
+}
+
+.tab-btn.active {
+    background-color: #27272a;
+    color: #ffffff;
+    border-color: #52525b;
+}

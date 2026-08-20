@@ -123,7 +123,7 @@ class SettingsPage(Adw.Bin):
 
     def _build_cpu_temp_group(self):
         group = Adw.PreferencesGroup()
-        group.set_title("CPU & Thermal Limits")
+        group.set_title("CPU &amp; Thermal Limits")
         group.set_description("Resource alert limits and hardware temperature monitoring")
         self.prefs_page.add(group)
 
@@ -169,7 +169,7 @@ class SettingsPage(Adw.Bin):
 
     def _build_disk_net_group(self):
         group = Adw.PreferencesGroup()
-        group.set_title("Disk & Network Alerts")
+        group.set_title("Disk &amp; Network Alerts")
         group.set_description("Storage usage and network throughput threshold settings")
         self.prefs_page.add(group)
 
@@ -205,7 +205,7 @@ class SettingsPage(Adw.Bin):
 
     def _build_kill_group(self):
         group = Adw.PreferencesGroup()
-        group.set_title("Kill Policy & Candidate Scoring")
+        group.set_title("Kill Policy &amp; Candidate Scoring")
         group.set_description("Automated recovery policies and victim candidate calculation weights")
         self.prefs_page.add(group)
 
