@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
+"""Development launcher for Aegis. Not used in production installs."""
 import sys
 import os
 
-AEGIS_ROOT = "/home/gaurav/Projects/Aegis"
-if AEGIS_ROOT not in sys.path:
-    sys.path.insert(0, AEGIS_ROOT)
+# Add the repository root to Python path for development use
+_repo_root = os.path.dirname(os.path.abspath(__file__))
+if _repo_root not in sys.path:
+    sys.path.insert(0, _repo_root)
 
 from aegis.main import main
 

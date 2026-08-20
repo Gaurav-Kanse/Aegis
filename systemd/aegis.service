@@ -1,12 +1,14 @@
 [Unit]
 Description=Aegis System Resource & OOM Monitor Daemon
+Documentation=https://github.com/Gaurav-Kanse/Aegis
 After=default.target
 
 [Service]
 Type=simple
-ExecStart=%h/.local/bin/aegis daemon
-Restart=always
+ExecStart=/usr/bin/aegis daemon
+Restart=on-failure
 RestartSec=5s
+Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=default.target

@@ -1,50 +1,63 @@
 # Aegis
 
-Aegis is an event-driven, kernel-backed system monitor and proactive OOM resource daemon for Linux written in Python. It watches RAM (cgroup v2 & meminfo), temperature (hwmon), Pressure Stall Information (PSI), CPU, Disk, Network throughput, and Battery status, then executes configurable actions: desktop notifications, graceful `SIGTERM` signals to score-ranked process hogs, or job suspensions.
+Aegis is an event-driven, kernel-backed system monitor and proactive resource/OOM daemon for Linux with a Nothing-inspired GTK4 & Libadwaita desktop interface. It monitors RAM (cgroup v2 & meminfo), temperature (hwmon), Pressure Stall Information (PSI), CPU, Disk, Network throughput, and Battery status, executing configurable notifications or graceful process recovery actions.
 
 ---
 
-## 🏗️ Architecture
+## 📦 Installation (Fedora RPM)
 
-```
-Watcher Threads ── Event{Severity, Source} ──▶ Policy Engine ──▶ Action (SIGTERM / Notify)
-(cgroup v2, PSI,                               (config.toml)
- hwmon, /proc)
+Aegis is packaged as a native Fedora RPM.
+
+```bash
+# Build the RPM package (from repository source)
+./scripts/build-rpm.sh
+
+# Install the Aegis package
+sudo dnf install ./dist/aegis-0.1.0-1.fc44.noarch.rpm
 ```
 
 ---
 
 ## ⚡ Quick Start
 
-Run directly with python:
+After installing Aegis:
+
+### 1. Enable & Start Systemd User Daemon
 ```bash
-cd /home/gaurav/Projects/Aegis
-python3 -m aegis.main top
+systemctl --user enable --now aegis.service
 ```
 
-Or run via the standalone launcher script:
+### 2. Launch the Aegis GTK GUI
 ```bash
-./aegis-runner top
+aegis-gui
 ```
+Or launch **Aegis** directly from your desktop Application Menu (**Applications → Aegis**).
 
 ---
 
-## 🛠️ Commands
+## 🛠️ CLI Reference
+
+The installed `aegis` command line tool provides complete terminal control:
 
 | Command | Description |
 | --- | --- |
-| `aegis daemon` | Start the event-driven resource monitor daemon |
+| `aegis --version` | Display Aegis version information |
+| `aegis --help` | Display command usage and available subcommands |
+| `aegis gui` | Launch the GTK4 + Libadwaita desktop application |
+| `aegis daemon` | Run the event-driven monitor daemon directly |
 | `aegis top` | One-shot snapshot of system health and top RAM consumers |
-| `aegis stats` | Live terminal interactive UI dashboard (Ctrl+C or 'q' to exit) |
+| `aegis stats` | Interactive live terminal dashboard (TUI) |
 | `aegis threshold status/set` | View or adjust memory/thermal/network alert thresholds |
-| `aegis protect list/add/remove` | Manage protected applications (never killed) |
+| `aegis protect list/add/remove` | Manage protected process whitelist (never targeted) |
 | `aegis oom-protect` | Privileged helper setting `oom_score_adj=-1000` |
-| `aegis history` | Show logged events and kills |
+| `aegis history` | View logged events, alerts, and kill actions |
 | `aegis clean` | Clear logged state history |
 
 ---
 
 ## ⚙️ Configuration (`~/.config/aegis/config.toml`)
+
+User configuration is automatically created at `~/.config/aegis/config.toml`:
 
 ```toml
 protect = ["nvim", "gnome-shell", "code", "python3"]
@@ -84,31 +97,57 @@ cpu = 0.3
 runtime = 0.1
 ```
 
----
-
-## 🛡️ Kill Policy & Candidate Scoring
-
-Candidate processes are ranked using a multi-factor score:
-
-$$\text{score} = 0.6 \cdot \text{rss}_{\text{norm}} + 0.3 \cdot \text{cpu}_{\text{norm}} + 0.1 \cdot \text{runtime}_{\text{norm}} + 0.3 (\text{interactive}) + 0.2 (\text{expendable})$$
-
-System processes, window managers, IDEs, and protected apps are blacklisted and never targeted.
+*Note: User configuration in `~/.config/aegis/` is preserved across package updates and uninstalls.*
 
 ---
 
-## 🔌 IPC Layer
+## 📁 File Locations & State
 
-Aegis daemon hosts a Unix Domain Socket JSON-RPC server for remote control and GUI integration.
+* **Configuration**: `~/.config/aegis/config.toml`
+* **IPC Socket**: `~/.local/state/aegis/ipc.sock` (permissions `0600`)
+* **Event History Logs**: `~/.local/state/aegis/events.json`
+* **Systemd User Service**: `/usr/lib/systemd/user/aegis.service`
+* **Polkit Security Rule**: `/usr/share/polkit-1/rules.d/99-aegis.rules`
 
-* **Socket Location**: `~/.local/state/aegis/ipc.sock` (mode `0600`)
-* **Protocol**: Newline-delimited JSON-RPC requests & responses.
-* **Available RPC Methods**:
-  * Read: `get_status`, `get_processes`, `get_events`, `get_config`
-  * Control: `protect_process`, `unprotect_process`, `mark_expendable`, `terminate_process`
-  * Config: `update_config`
+---
 
-### Testing the IPC Layer
+## 📋 Systemd Service & Logs
+
+To check daemon status:
 ```bash
-python3 tests/test_ipc.py
+systemctl --user status aegis.service
 ```
 
+To view live journald logs:
+```bash
+journalctl --user -u aegis.service -f
+```
+
+---
+
+## 🗑️ Uninstallation
+
+To remove Aegis cleanly:
+```bash
+# Stop and disable user daemon
+systemctl --user disable --now aegis.service
+
+# Remove package
+sudo dnf remove aegis
+```
+*Note: Your personal settings (`~/.config/aegis`) and state history (`~/.local/state/aegis`) are preserved.*
+
+---
+
+## 💻 Development & Building from Source
+
+To run Aegis directly from the source repository:
+
+```bash
+# Run unit test suite
+python3 -m unittest discover -s tests
+
+# Run development runner
+./aegis-runner top
+./aegis-runner gui
+```

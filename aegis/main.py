@@ -1,5 +1,6 @@
 import sys
 import argparse
+from aegis import __version__
 from aegis.daemon import Daemon
 from aegis.cli.top import run_top
 from aegis.cli.stats import run_stats
@@ -14,6 +15,7 @@ def main():
         prog="aegis",
         description="Aegis: Event-driven, kernel-backed system monitor and resource daemon for Linux"
     )
+    parser.add_argument("--version", action="version", version=f"aegis {__version__}")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     subparsers.add_parser("gui", help="Start the Aegis GTK4 + Libadwaita desktop application")

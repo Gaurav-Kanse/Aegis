@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <rect width="256" height="256" rx="56" fill="#0d0d0f"/>
+  
+  <!-- Subtle background technical grid line -->
+  <circle cx="128" cy="128" r="96" fill="none" stroke="#27272a" stroke-width="2" stroke-dasharray="4 6"/>
+  
+  <!-- Outer Shield Contour -->
+  <path d="M128 40 L196 68 V136 C196 180 164 212 128 224 C92 212 60 180 60 136 V68 Z" 
+        fill="none" stroke="#f4f4f5" stroke-width="10" stroke-linejoin="round" stroke-linecap="round"/>
+        
+  <!-- Inner Technical Shield Emblem -->
+  <path d="M128 64 L176 86 V134 C176 166 152 192 128 202 C104 192 80 166 80 134 V86 Z" 
+        fill="none" stroke="#a1a1aa" stroke-width="4" stroke-linejoin="round"/>
+        
+  <!-- Center Core Guardian Symbol -->
+  <circle cx="128" cy="128" r="16" fill="#f4f4f5"/>
+  <line x1="128" y1="84" x2="128" y2="104" stroke="#f4f4f5" stroke-width="4" stroke-linecap="round"/>
+  <line x1="128" y1="152" x2="128" y2="172" stroke="#f4f4f5" stroke-width="4" stroke-linecap="round"/>
+  <line x1="84" y1="128" x2="104" y2="128" stroke="#f4f4f5" stroke-width="4" stroke-linecap="round"/>
+  <line x1="152" y1="128" x2="172" y2="128" stroke="#f4f4f5" stroke-width="4" stroke-linecap="round"/>
+</svg>

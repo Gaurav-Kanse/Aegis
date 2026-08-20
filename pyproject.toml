@@ -22,3 +22,13 @@ dependencies = []
 [project.scripts]
 aegis = "aegis.main:main"
 aegis-gui = "aegis.gui.app:run_gui"
+
+[project.urls]
+Homepage = "https://github.com/Gaurav-Kanse/Aegis"
+Repository = "https://github.com/Gaurav-Kanse/Aegis"
+
+[tool.setuptools.packages.find]
+include = ["aegis*"]
+
+[tool.setuptools.package-data]
+"aegis.gui" = ["style.css"]

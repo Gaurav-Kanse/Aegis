@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Aegis
+GenericName=System Monitor
+Comment=Linux system guardian and proactive resource monitor
+Exec=aegis-gui
+Icon=aegis
+Terminal=false
+Type=Application
+Categories=System;Monitor;
+Keywords=system;monitor;memory;cpu;oom;resource;
+StartupNotify=true

@@ -290,7 +290,7 @@ class AegisWindow(Adw.ApplicationWindow):
 
 class AegisApp(Adw.Application):
     def __init__(self):
-        super().__init__(application_id="org.aegis.desktop", flags=0)
+        super().__init__(application_id="org.aegis.Aegis", flags=0)
         self.ipc_client = GUIIPCClient(poll_interval=1.0)
         self.window: Optional[AegisWindow] = None
 

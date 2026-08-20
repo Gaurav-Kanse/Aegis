@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+*.rpm
+*.AppImage
+*.whl
+*.tar.gz
+.eggs/

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.aegis.Aegis</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Aegis</name>
+  <summary>Linux system guardian and proactive resource monitor</summary>
+  <description>
+    <p>
+      Aegis is an event-driven, kernel-backed system monitor and proactive OOM resource daemon for Linux.
+      It monitors RAM (cgroups v2 &amp; meminfo), temperature (hwmon), Pressure Stall Information (PSI), CPU, Disk,
+      Network throughput, and Battery status, executing configurable notifications or graceful SIGTERM actions.
+    </p>
+  </description>
+  <launchable type="desktop-id">org.aegis.Aegis.desktop</launchable>
+  <url type="homepage">https://github.com/Gaurav-Kanse/Aegis</url>
+  <developer_name>Gaurav</developer_name>
+  <categories>
+    <category>System</category>
+    <category>Monitor</category>
+    <category>Utility</category>
+  </categories>
+</component>

@@ -1,7 +1,8 @@
 import math
 import gi
 gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk, Gdk, Pango
+gi.require_version('PangoCairo', '1.0')
+from gi.repository import Gtk, Gdk, Pango, PangoCairo
 
 class HealthRingGauge(Gtk.DrawingArea):
     def __init__(self, size: int = 160):
@@ -48,15 +49,17 @@ class HealthRingGauge(Gtk.DrawingArea):
         # Render Score Number (e.g. 87)
         cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
         
-        layout = self.create_pango_layout(str(self.score))
+        layout = PangoCairo.create_layout(cr)
+        layout.set_text(str(self.score), -1)
         font_desc = Pango.FontDescription("Sans Bold 26")
         layout.set_font_description(font_desc)
         w, h = layout.get_pixel_size()
         cr.move_to(cx - w / 2.0, cy - h / 2.0 - 6)
-        Pango.cairo_show_layout(cr, layout)
+        PangoCairo.show_layout(cr, layout)
 
         # Render State Text (e.g. PROTECTED)
-        sub_layout = self.create_pango_layout(self.state_text)
+        sub_layout = PangoCairo.create_layout(cr)
+        sub_layout.set_text(self.state_text, -1)
         sub_font = Pango.FontDescription("Sans Bold 9")
         sub_layout.set_font_description(sub_font)
         sw, sh = sub_layout.get_pixel_size()
@@ -69,4 +72,4 @@ class HealthRingGauge(Gtk.DrawingArea):
             cr.set_source_rgba(0.29, 0.87, 0.5, 1.0)  # Green protected
 
         cr.move_to(cx - sw / 2.0, cy + h / 2.0 - 2)
-        Pango.cairo_show_layout(cr, sub_layout)
+        PangoCairo.show_layout(cr, sub_layout)
