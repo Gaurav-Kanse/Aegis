@@ -159,3 +159,23 @@ class GUIIPCClient:
                 GLib.idle_add(callback, None, ex)
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def fetch_config_async(self, callback: Callable[[Optional[Any], Optional[Exception]], None]):
+        def worker():
+            try:
+                res = self.client.get_config()
+                GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def update_config_async(self, config_dict: Dict[str, Any], callback: Callable[[Optional[Any], Optional[Exception]], None]):
+        def worker():
+            try:
+                res = self.client.update_config(config_dict)
+                GLib.idle_add(callback, res, None)
+            except Exception as ex:
+                GLib.idle_add(callback, None, ex)
+
+        threading.Thread(target=worker, daemon=True).start()

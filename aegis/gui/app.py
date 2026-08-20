@@ -81,7 +81,7 @@ class AegisWindow(Adw.ApplicationWindow):
             self.page_protection, "protection", "Protection", "emblem-readonly-symbolic"
         )
 
-        self.page_settings = SettingsPage()
+        self.page_settings = SettingsPage(self.ipc_client)
         self.view_stack.add_titled_with_icon(
             self.page_settings, "settings", "Settings", "emblem-system-symbolic"
         )
@@ -113,11 +113,13 @@ class AegisWindow(Adw.ApplicationWindow):
 
     def show_online(self, status: dict):
         self.overlay_stack.set_visible_child_name("online")
+        self.page_settings.set_offline(False)
         self.page_overview.update_data(status)
         self.page_analytics.update_sample(status)
         self.ipc_client.fetch_processes_async(self._on_processes_response)
         self.ipc_client.fetch_events_async(100, self._on_events_response)
         self.ipc_client.fetch_protection_async(self._on_protection_response)
+        self.ipc_client.fetch_config_async(self._on_config_response)
 
     def _on_processes_response(self, procs, err):
         if procs is not None and isinstance(procs, list):
@@ -132,12 +134,17 @@ class AegisWindow(Adw.ApplicationWindow):
         if prot is not None and isinstance(prot, dict):
             self.page_protection.update_protection(prot.get("protected", []), prot.get("expendable", []))
 
+    def _on_config_response(self, cfg, err):
+        if cfg is not None and isinstance(cfg, dict):
+            self.page_settings.update_config(cfg)
+
     def _on_metrics_history_response(self, history, err):
         if history is not None and isinstance(history, list):
             self.page_analytics.set_metrics_history(history)
 
     def show_offline(self):
         self.overlay_stack.set_visible_child_name("offline")
+        self.page_settings.set_offline(True)
 
     def _on_retry_clicked(self, button):
         self.ipc_client.fetch_status_async(self._on_retry_response)

@@ -116,10 +116,65 @@ class TestAegisIPC(unittest.TestCase):
         self.client.unmark_expendable("conflict_app")
 
     def test_08_update_config(self):
-        res = self.client.update_config({"memory": {"soft_pct": 88.5}})
+        res = self.client.update_config({
+            "memory": {"soft_pct": 88.0, "hard_pct": 94.0, "max_pct": 98.0},
+            "temperature": {"warning": 80.0, "critical": 92.0, "action": "kill"},
+            "kill": {"weights": {"rss": 0.5, "cpu": 0.4, "runtime": 0.1}}
+        })
         self.assertTrue(res.get("updated"))
         cfg = self.client.get_config()
-        self.assertEqual(cfg["memory"]["soft_pct"], 88.5)
+        self.assertEqual(cfg["memory"]["soft_pct"], 88.0)
+        self.assertEqual(cfg["memory"]["hard_pct"], 94.0)
+        self.assertEqual(cfg["temperature"]["warning"], 80.0)
+        self.assertEqual(cfg["kill"]["weights"]["rss"], 0.5)
+
+    def test_08b_update_config_invalid_memory(self):
+        # soft >= hard should be rejected
+        with self.assertRaises(IPCError) as ctx:
+            self.client.update_config({"memory": {"soft_pct": 95.0, "hard_pct": 90.0}})
+        self.assertEqual(ctx.exception.code, "INVALID_PARAMS")
+
+        # hard >= max should be rejected
+        with self.assertRaises(IPCError) as ctx:
+            self.client.update_config({"memory": {"soft_pct": 80.0, "hard_pct": 98.0, "max_pct": 95.0}})
+        self.assertEqual(ctx.exception.code, "INVALID_PARAMS")
+
+        # out of bounds > 100 should be rejected
+        with self.assertRaises(IPCError) as ctx:
+            self.client.update_config({"memory": {"soft_pct": 105.0}})
+        self.assertEqual(ctx.exception.code, "INVALID_PARAMS")
+
+    def test_08c_update_config_invalid_temperature(self):
+        # warning >= critical should be rejected
+        with self.assertRaises(IPCError) as ctx:
+            self.client.update_config({"temperature": {"warning": 95.0, "critical": 90.0}})
+        self.assertEqual(ctx.exception.code, "INVALID_PARAMS")
+
+    def test_08d_update_config_invalid_weights(self):
+        # weights sum to 1.3 != 1.0 should be rejected
+        with self.assertRaises(IPCError) as ctx:
+            self.client.update_config({"kill": {"weights": {"rss": 0.7, "cpu": 0.4, "runtime": 0.2}}})
+        self.assertEqual(ctx.exception.code, "INVALID_PARAMS")
+
+    def test_08e_config_change_event(self):
+        self.client.update_config({"cpu": {"alert_pct": 85.0}})
+        events = self.client.get_events(limit=10, source="config")
+        self.assertTrue(len(events) > 0)
+        self.assertEqual(events[0]["source"], "config")
+
+    def test_08f_validate_config_dict_unit(self):
+        from aegis.config import validate_config_dict, get_default_config, save_config, CONFIG_PATH
+        # Valid dict should not raise
+        validate_config_dict({"memory": {"soft_pct": 80.0, "hard_pct": 90.0, "max_pct": 95.0}})
+        
+        # Default config
+        def_cfg = get_default_config()
+        self.assertEqual(def_cfg.memory.soft_pct, 90.0)
+
+        # Save config atomic check
+        def_cfg.memory.soft_pct = 85.0
+        save_config(def_cfg)
+        self.assertTrue(os.path.exists(CONFIG_PATH))
 
     def test_09_invalid_requests(self):
         # 1. Unknown method

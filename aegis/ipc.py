@@ -8,7 +8,7 @@ import threading
 import time
 from typing import Dict, Any, List, Optional
 
-from aegis.config import load_config, save_config, Config
+from aegis.config import load_config, save_config, validate_config_dict, Config
 from aegis.state import record_event, load_history
 from aegis.notify import send_notification
 from aegis.utils.proc import total_ram_kb, read_all_proc_samples, uptime_sec
@@ -523,6 +523,11 @@ class IPCServer:
 
         cfg = self.daemon.cfg if self.daemon else load_config()
 
+        try:
+            validate_config_dict(params, current_cfg=cfg)
+        except (ValueError, TypeError) as ve:
+            raise IPCError("INVALID_PARAMS", str(ve))
+
         if "protect" in params and isinstance(params["protect"], list):
             cfg.protect = [str(x) for x in params["protect"]]
         if "expendable" in params and isinstance(params["expendable"], list):
@@ -550,11 +555,15 @@ class IPCServer:
             c = params["cpu"]
             if "alert_pct" in c:
                 cfg.cpu.alert_pct = float(c["alert_pct"])
+            if "action" in c:
+                cfg.cpu.action = str(c["action"])
 
         if "disk" in params and isinstance(params["disk"], dict):
             d = params["disk"]
             if "space_alert_pct" in d:
                 cfg.disk.space_alert_pct = float(d["space_alert_pct"])
+            if "io_alert" in d:
+                cfg.disk.io_alert = bool(d["io_alert"])
 
         if "network" in params and isinstance(params["network"], dict):
             n = params["network"]
@@ -569,6 +578,10 @@ class IPCServer:
                 cfg.kill.cooldown = str(k["cooldown"])
             if "max_per_min" in k:
                 cfg.kill.max_per_min = int(k["max_per_min"])
+            if "oom_prefer" in k:
+                cfg.kill.oom_prefer = bool(k["oom_prefer"])
+            if "oom_protect" in k:
+                cfg.kill.oom_protect = bool(k["oom_protect"])
             if "weights" in k and isinstance(k["weights"], dict):
                 w = k["weights"]
                 if "rss" in w:
@@ -578,9 +591,17 @@ class IPCServer:
                 if "runtime" in w:
                     cfg.kill.weights.runtime = float(w["runtime"])
 
+        if "battery" in params and isinstance(params["battery"], dict):
+            b = params["battery"]
+            if "low_pct" in b:
+                cfg.battery.low_pct = float(b["low_pct"])
+
         save_config(cfg)
         if self.daemon:
             self.daemon.cfg = cfg
+
+        keys_summary = ", ".join(params.keys())
+        record_event("config", "INFO", f"Configuration updated: {keys_summary}", {"sections": list(params.keys())})
 
         return {"updated": True}
 

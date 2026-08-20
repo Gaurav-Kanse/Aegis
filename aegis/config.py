@@ -188,6 +188,134 @@ def load_config() -> Config:
 
     return cfg
 
+def get_default_config() -> Config:
+    return Config()
+
+def validate_config_dict(data: Dict[str, Any], current_cfg: Config = None) -> None:
+    """Validates configuration updates. Raises ValueError with descriptive error if invalid."""
+    if current_cfg is None:
+        current_cfg = Config()
+
+    # Create dummy copy for full validation
+    soft_pct = current_cfg.memory.soft_pct
+    hard_pct = current_cfg.memory.hard_pct
+    max_pct = current_cfg.memory.max_pct
+
+    warning_temp = current_cfg.temperature.warning
+    critical_temp = current_cfg.temperature.critical
+
+    rss_w = current_cfg.kill.weights.rss
+    cpu_w = current_cfg.kill.weights.cpu
+    rt_w = current_cfg.kill.weights.runtime
+
+    if "memory" in data:
+        mem = data["memory"]
+        if not isinstance(mem, dict):
+            raise ValueError("Memory config must be a dictionary")
+        if "soft_pct" in mem:
+            val = float(mem["soft_pct"])
+            if not (0 <= val <= 100):
+                raise ValueError("Memory soft threshold must be between 0% and 100%")
+            soft_pct = val
+        if "hard_pct" in mem:
+            val = float(mem["hard_pct"])
+            if not (0 <= val <= 100):
+                raise ValueError("Memory hard threshold must be between 0% and 100%")
+            hard_pct = val
+        if "max_pct" in mem:
+            val = float(mem["max_pct"])
+            if not (0 <= val <= 100):
+                raise ValueError("Memory max threshold must be between 0% and 100%")
+            max_pct = val
+
+        if soft_pct >= hard_pct:
+            raise ValueError("Hard memory threshold must be greater than soft threshold")
+        if hard_pct >= max_pct:
+            raise ValueError("Critical/max memory threshold must be greater than hard threshold")
+
+    if "temperature" in data:
+        t = data["temperature"]
+        if not isinstance(t, dict):
+            raise ValueError("Temperature config must be a dictionary")
+        if "warning" in t:
+            val = float(t["warning"])
+            if not (0 <= val <= 150):
+                raise ValueError("Warning temperature must be between 0°C and 150°C")
+            warning_temp = val
+        if "critical" in t:
+            val = float(t["critical"])
+            if not (0 <= val <= 150):
+                raise ValueError("Critical temperature must be between 0°C and 150°C")
+            critical_temp = val
+
+        if warning_temp >= critical_temp:
+            raise ValueError("Warning temperature must be lower than critical temperature")
+
+    if "cpu" in data:
+        c = data["cpu"]
+        if not isinstance(c, dict):
+            raise ValueError("CPU config must be a dictionary")
+        if "alert_pct" in c:
+            val = float(c["alert_pct"])
+            if not (0 <= val <= 100):
+                raise ValueError("CPU alert threshold must be between 0% and 100%")
+
+    if "disk" in data:
+        d = data["disk"]
+        if not isinstance(d, dict):
+            raise ValueError("Disk config must be a dictionary")
+        if "space_alert_pct" in d:
+            val = float(d["space_alert_pct"])
+            if not (0 <= val <= 100):
+                raise ValueError("Disk space alert threshold must be between 0% and 100%")
+
+    if "network" in data:
+        n = data["network"]
+        if not isinstance(n, dict):
+            raise ValueError("Network config must be a dictionary")
+        if "alert_mbps" in n:
+            val = float(n["alert_mbps"])
+            if val < 0:
+                raise ValueError("Network alert threshold cannot be negative")
+
+    if "kill" in data:
+        k = data["kill"]
+        if not isinstance(k, dict):
+            raise ValueError("Kill config must be a dictionary")
+        if "max_per_min" in k:
+            val = int(k["max_per_min"])
+            if val < 0:
+                raise ValueError("Maximum kills per minute cannot be negative")
+        if "weights" in k:
+            w = k["weights"]
+            if not isinstance(w, dict):
+                raise ValueError("Kill weights must be a dictionary")
+            if "rss" in w:
+                rss_w = float(w["rss"])
+                if not (0 <= rss_w <= 1.0):
+                    raise ValueError("RSS scoring weight must be between 0.0 and 1.0")
+            if "cpu" in w:
+                cpu_w = float(w["cpu"])
+                if not (0 <= cpu_w <= 1.0):
+                    raise ValueError("CPU scoring weight must be between 0.0 and 1.0")
+            if "runtime" in w:
+                rt_w = float(w["runtime"])
+                if not (0 <= rt_w <= 1.0):
+                    raise ValueError("Runtime scoring weight must be between 0.0 and 1.0")
+
+            total_weight = round(rss_w + cpu_w + rt_w, 4)
+            if abs(total_weight - 1.0) > 0.01:
+                raise ValueError(f"Scoring weights must total 100% (currently {int(round(total_weight * 100))}%)")
+
+    if "battery" in data:
+        b = data["battery"]
+        if not isinstance(b, dict):
+            raise ValueError("Battery config must be a dictionary")
+        if "low_pct" in b:
+            val = float(b["low_pct"])
+            if not (0 <= val <= 100):
+                raise ValueError("Battery low threshold must be between 0% and 100%")
+
 def save_config(cfg: Config):
     os.makedirs(CONFIG_DIR, exist_ok=True)
     protect_str = ", ".join(f'"{p}"' for p in cfg.protect)
@@ -238,5 +366,8 @@ runtime = {cfg.kill.weights.runtime}
 low_pct = {cfg.battery.low_pct}
 action = "{cfg.battery.action}"
 """
-    with open(CONFIG_PATH, "w") as f:
+    tmp_path = CONFIG_PATH + ".tmp"
+    with open(tmp_path, "w") as f:
         f.write(content)
+    os.replace(tmp_path, CONFIG_PATH)
+
