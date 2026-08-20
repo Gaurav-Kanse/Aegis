@@ -6,7 +6,7 @@ Featuring a Nothing-inspired monochrome interface, Aegis continuously monitors R
 
 ---
 
-## 🌟 Highlights
+## Highlights
 
 * **Proactive Resource Recovery**: Calculates multi-factor candidate scores ($\text{RSS} + \text{CPU} + \text{Runtime}$) to rank RAM hogs and take action before system freezes.
 * **Whitelist & Priority Protection**: Built-in whitelist protection for critical apps (`gnome-shell`, `nvim`, `code`, `python3`) and custom priority adjustments (`oom_score_adj`).
@@ -17,7 +17,7 @@ Featuring a Nothing-inspired monochrome interface, Aegis continuously monitors R
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
                        AEGIS SYSTEM MONITOR
@@ -39,7 +39,7 @@ Featuring a Nothing-inspired monochrome interface, Aegis continuously monitors R
 
 ---
 
-## 📦 Installation (Fedora RPM)
+## Installation (Fedora RPM)
 
 Aegis is distributed as a native Fedora RPM package.
 
@@ -56,7 +56,7 @@ sudo dnf install ./dist/aegis-0.1.0-1.fc44.noarch.rpm
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 After installing Aegis:
 
@@ -75,7 +75,7 @@ Or open **Aegis** from your desktop launcher (**Applications → System → Aegi
 
 ---
 
-## 🖥️ Desktop Interface Pages
+## Desktop Interface Pages
 
 The Aegis GUI is divided into six specialized views:
 
@@ -88,7 +88,7 @@ The Aegis GUI is divided into six specialized views:
 
 ---
 
-## 🛠️ CLI Reference
+## CLI Reference
 
 The installed `aegis` command line tool provides terminal management:
 
@@ -111,7 +111,7 @@ The installed `aegis` command line tool provides terminal management:
 
 ---
 
-## ⚙️ Configuration (`~/.config/aegis/config.toml`)
+## Configuration (`~/.config/aegis/config.toml`)
 
 User preferences are loaded from `~/.config/aegis/config.toml`:
 
@@ -157,7 +157,7 @@ runtime = 0.1
 
 ---
 
-## 🛡️ Candidate Scoring Engine
+## Candidate Scoring Engine
 
 When memory pressure crosses hard limits, target candidates are selected using a multi-factor score:
 
@@ -167,7 +167,7 @@ System processes, display managers (`gnome-shell`, `wayland`), IDEs, and user-pr
 
 ---
 
-## 📁 System Files & State Directories
+## System Files & State Directories
 
 * **User Configuration**: `~/.config/aegis/config.toml`
 * **IPC Socket**: `~/.local/state/aegis/ipc.sock` (mode `0600`)
@@ -180,7 +180,7 @@ System processes, display managers (`gnome-shell`, `wayland`), IDEs, and user-pr
 
 ---
 
-## 📋 Service Control & Journal Logs
+## Service Control & Journal Logs
 
 Check user service status:
 ```bash
@@ -194,7 +194,7 @@ journalctl --user -u aegis.service -f
 
 ---
 
-## 🗑️ Uninstallation
+## Uninstallation
 
 To cleanly remove Aegis while retaining personal settings:
 
@@ -208,7 +208,7 @@ sudo dnf remove aegis
 
 ---
 
-## 🧪 Development & Source Testing
+## Development & Source Testing
 
 To run Aegis directly from the source repository:
 
@@ -223,6 +223,6 @@ python3 -m unittest discover -s tests
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the [MIT License](LICENSE). Copyright (c) 2026 Gaurav.
