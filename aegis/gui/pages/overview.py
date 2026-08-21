@@ -242,7 +242,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         lbl_name.set_hexpand(True)
         row.append(lbl_name)
 
-        lbl_val = Gtk.Label(label="[● NORMAL]")
+        lbl_val = Gtk.Label(label="Normal")
         lbl_val.add_css_class("status-badge")
         lbl_val.add_css_class("normal")
         row.append(lbl_val)
@@ -258,7 +258,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         if not status:
             return
 
-        self.lbl_last_update.set_text(f"UPDATED: {time.strftime('%H:%M:%S')}")
+        self.lbl_last_update.set_text(f"Updated {time.strftime('%H:%M:%S')}")
 
         health = status.get("health", 100)
         state = status.get("state", "PROTECTED")
@@ -273,21 +273,21 @@ class OverviewPage(Gtk.ScrolledWindow):
 
         # CPU Card
         cpu_pct = status.get("cpu", 0.0)
-        self.card_cpu.set_metric(f"{cpu_pct:.0f}%", cpu_pct / 100.0, "UTILIZATION")
+        self.card_cpu.set_metric(f"{cpu_pct:.0f}%", cpu_pct / 100.0, "Utilization")
 
         # Temp Card
         temp_c = status.get("temperature", 0.0)
-        self.card_temp.set_metric(f"{temp_c:.0f}°C", temp_c / 100.0, "NORMAL" if temp_c < 85 else "HIGH")
+        self.card_temp.set_metric(f"{temp_c:.0f}°C", temp_c / 100.0, "Normal" if temp_c < 85 else "High")
 
         # Disk Card
         disk = status.get("disk", {})
         root_pct = disk.get("/", 0.0)
-        self.card_disk.set_metric(f"{root_pct:.0f}%", root_pct / 100.0, "STORAGE USED")
+        self.card_disk.set_metric(f"{root_pct:.0f}%", root_pct / 100.0, "Storage used")
 
         # Network Card
         net = status.get("network", {})
         tot_net = sum(v for k, v in net.items() if isinstance(v, (int, float)))
-        self.card_net.set_metric(f"{tot_net:.1f}", min(1.0, tot_net / 1000.0), "MBPS TRAFFIC")
+        self.card_net.set_metric(f"{tot_net:.1f}", min(1.0, tot_net / 1000.0), "MB/s traffic")
 
         # Subsystems
         self._update_status_badge(self.lbl_mem_sub, pct >= 96, pct >= 90)
@@ -306,7 +306,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         if len(self.history_samples) > 300:
             self.history_samples = self.history_samples[-300:]
         
-        self.lbl_chart_stats.set_text(f"RAM: {pct:.1f}%  ::  CPU: {cpu_pct:.1f}%")
+        self.lbl_chart_stats.set_text(f"RAM: {pct:.1f}%   CPU: {cpu_pct:.1f}%")
         self.chart_canvas.queue_draw()
 
         if self.ipc_client:
@@ -317,13 +317,13 @@ class OverviewPage(Gtk.ScrolledWindow):
         for cls in ["normal", "warning", "critical"]:
             label.remove_css_class(cls)
         if is_critical:
-            label.set_label("[● CRITICAL]")
+            label.set_label("Critical")
             label.add_css_class("critical")
         elif is_warning:
-            label.set_label("[● WARNING]")
+            label.set_label("Warning")
             label.add_css_class("warning")
         else:
-            label.set_label("[● NORMAL]")
+            label.set_label("Normal")
             label.add_css_class("normal")
 
     def _on_top_procs_response(self, procs, err):
@@ -376,12 +376,12 @@ class OverviewPage(Gtk.ScrolledWindow):
             
             ts = ev.get("timestamp", "")
             time_str = ts.split("T")[-1][:8] if "T" in ts else ts[:8]
-            lbl_t = Gtk.Label(label=f"[{time_str}]")
+            lbl_t = Gtk.Label(label=time_str)
             lbl_t.add_css_class("aegis-subtext")
             row.append(lbl_t)
 
             source = ev.get("source", "system").upper()
-            lbl_src = Gtk.Label(label=f"[● {source}]")
+            lbl_src = Gtk.Label(label=source)
             lbl_src.add_css_class("status-badge")
             lbl_src.add_css_class("normal")
             row.append(lbl_src)

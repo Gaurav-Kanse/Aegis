@@ -38,7 +38,7 @@ class EventsPage(Gtk.Box):
         hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
 
-        lbl_title = Gtk.Label(label="AEGIS // EVENT_AUDIT_LOG")
+        lbl_title = Gtk.Label(label="Events")
         lbl_title.add_css_class("title-1")
         lbl_title.add_css_class("bold")
         lbl_title.set_halign(Gtk.Align.START)
@@ -55,12 +55,12 @@ class EventsPage(Gtk.Box):
         spacer.set_hexpand(True)
         hdr_box.append(spacer)
 
-        btn_clear = Gtk.Button(label="[ CLEAR LOG ]")
+        btn_clear = Gtk.Button(label="Clear Log")
         btn_clear.add_css_class("action-btn-normal")
         btn_clear.connect("clicked", self._on_clear_clicked)
         hdr_box.append(btn_clear)
 
-        btn_refresh = Gtk.Button(label="[ REFRESH ]")
+        btn_refresh = Gtk.Button(label="Refresh")
         btn_refresh.add_css_class("tab-btn")
         btn_refresh.set_tooltip_text("Refresh Events")
         btn_refresh.connect("clicked", lambda b: self.refresh_events())
@@ -99,8 +99,7 @@ class EventsPage(Gtk.Box):
         list_card.add_css_class("aegis-card")
 
         self.list_box = Gtk.ListBox()
-        self.list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
-        self.list_box.add_css_class("boxed-list")
+        self.list_box.add_css_class("selection-mode")
         self.list_box.connect("row-activated", self._on_row_activated)
         list_card.set_child(self.list_box)
 
@@ -109,52 +108,46 @@ class EventsPage(Gtk.Box):
     def set_ipc_client(self, client: GUIIPCClient):
         self.ipc_client = client
 
+    def append_events(self, events: List[Dict[str, Any]]):
+        self.all_events.extend(events)
+        # Keep last 500
+        if len(self.all_events) > 500:
+            self.all_events = self.all_events[-500:]
+        self._apply_filter()
+
     def refresh_events(self):
         if self.ipc_client:
-            self.ipc_client.fetch_events_async(limit=100, callback=self._on_events_fetched)
+            self.ipc_client.fetch_events_async(100, self._on_events_response)
 
-    def append_events(self, raw_events: List[Dict[str, Any]]):
-        added_new = False
-        for e in raw_events:
-            evt_id = e.get("id") or f"evt-{e.get('timestamp')}-{hash(e.get('message'))}"
-            e["id"] = evt_id
-            if evt_id not in self.seen_ids:
-                self.seen_ids.add(evt_id)
-                self.events.append(e)
-                added_new = True
-
-        if added_new:
-            self.events.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
-            self._render_filtered_events()
-
-    def _on_events_fetched(self, res, err):
-        if res is not None and isinstance(res, list):
-            self.append_events(res)
-
-    def _on_filter_changed(self, *args):
-        self._render_filtered_events()
+    def _on_events_response(self, events, err):
+        if events is not None and isinstance(events, list):
+            self.all_events = events
+            self._apply_filter()
 
     def _on_clear_clicked(self, button):
-        self.events.clear()
-        self.seen_ids.clear()
-        self._render_filtered_events()
+        self.all_events.clear()
+        self._apply_filter()
 
-    def _render_filtered_events(self):
+    def _on_filter_changed(self, *args):
+        self._apply_filter()
+
+    def _apply_filter(self):
+        # Clear existing list
         while True:
             child = self.list_box.get_first_child()
-            if not child:
+            if child is None:
                 break
             self.list_box.remove(child)
 
-        query = self.search_entry.get_text().strip().lower()
+        search_query = self.search_entry.get_text().lower().strip()
         sev_idx = self.severity_dropdown.get_selected()
 
-        for ev in self.events:
-            msg = str(ev.get("message", ""))
-            source = str(ev.get("source", ""))
-            severity = str(ev.get("severity", "INFO")).upper()
+        for ev in reversed(self.all_events):
+            source = str(ev.get("source", "")).lower()
+            severity = str(ev.get("severity", "")).upper()
+            msg = str(ev.get("message", "")).lower()
 
-            if query and query not in msg.lower() and query not in source.lower():
+            if search_query and (search_query not in msg and search_query not in source):
                 continue
 
             if sev_idx == 1 and severity != "INFO":
@@ -180,10 +173,9 @@ class EventsPage(Gtk.Box):
 
         row = Adw.ActionRow()
         row.set_title(msg)
-        row.set_subtitle(f"[{time_part}]  ::  SOURCE: {source}  ::  SEVERITY: {severity}")
+        row.set_subtitle(f"{time_part}  ·  Source: {source}  ·  Severity: {severity}")
 
-        badge_text = f"[● {severity}]"
-        badge = Gtk.Label(label=badge_text)
+        badge = Gtk.Label(label=severity)
         badge.add_css_class("status-badge")
         if severity in ("CRITICAL", "ERROR", "EMERGENCY"):
             badge.add_css_class("critical")

@@ -54,13 +54,13 @@ class AnalyticsPage(Gtk.Box):
         hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
 
-        lbl_title = Gtk.Label(label="AEGIS // RESOURCE_TELEMETRY")
+        lbl_title = Gtk.Label(label="Telemetry")
         lbl_title.add_css_class("title-1")
         lbl_title.add_css_class("bold")
         lbl_title.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_title)
 
-        lbl_sub = Gtk.Label(label="Real-time time-series telemetry with pixelated digital step graphs.")
+        lbl_sub = Gtk.Label(label="Real-time system metric history and trend analytics.")
         lbl_sub.add_css_class("aegis-subtext")
         lbl_sub.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_sub)
@@ -71,7 +71,7 @@ class AnalyticsPage(Gtk.Box):
         spacer.set_hexpand(True)
         hdr_box.append(spacer)
 
-        btn_refresh = Gtk.Button(label="[ REFRESH ]")
+        btn_refresh = Gtk.Button(label="Refresh")
         btn_refresh.add_css_class("tab-btn")
         btn_refresh.set_tooltip_text("Refresh Telemetry History")
         btn_refresh.connect("clicked", lambda b: self.refresh_history())
@@ -92,7 +92,7 @@ class AnalyticsPage(Gtk.Box):
 
         self.metric_btns: List[Gtk.Button] = []
         for idx, (label, key, unit, scale) in enumerate(PRIMARY_METRICS):
-            btn = Gtk.Button(label=f"[ {label} ]")
+            btn = Gtk.Button(label=label)
             btn.add_css_class("tab-btn")
             if idx == 0:
                 btn.add_css_class("active")
@@ -107,7 +107,7 @@ class AnalyticsPage(Gtk.Box):
         # Time Window Selector
         self.range_btns: List[Gtk.Button] = []
         for idx, (lbl, secs) in enumerate(TIME_RANGES):
-            btn = Gtk.Button(label=f"[ {lbl.upper()} ]")
+            btn = Gtk.Button(label=lbl)
             btn.add_css_class("tab-btn")
             if idx == 0:
                 btn.add_css_class("active")
@@ -141,7 +141,7 @@ class AnalyticsPage(Gtk.Box):
         chart_card.set_child(chart_vbox)
 
         chart_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        self.chart_header_lbl = Gtk.Label(label=":: TELEMETRY STEP GRAPH ::")
+        self.chart_header_lbl = Gtk.Label(label="Telemetry History")
         self.chart_header_lbl.add_css_class("aegis-card-header")
         self.chart_header_lbl.set_halign(Gtk.Align.START)
         chart_hdr.append(self.chart_header_lbl)
@@ -150,7 +150,7 @@ class AnalyticsPage(Gtk.Box):
         c_spacer.set_hexpand(True)
         chart_hdr.append(c_spacer)
 
-        self.lbl_legend_info = Gtk.Label(label="■ STEP_LINE   - - ALERT_LIMIT (90%)")
+        self.lbl_legend_info = Gtk.Label(label="■ Telemetry   -- Alert Threshold (90%)")
         self.lbl_legend_info.add_css_class("aegis-subtext")
         chart_hdr.append(self.lbl_legend_info)
 
@@ -172,7 +172,7 @@ class AnalyticsPage(Gtk.Box):
         box.set_margin_top(10)
         box.set_margin_bottom(10)
 
-        lbl_title = Gtk.Label(label=f":: {title} ::")
+        lbl_title = Gtk.Label(label=title)
         lbl_title.add_css_class("aegis-card-header")
         lbl_title.set_halign(Gtk.Align.START)
         box.append(lbl_title)

@@ -43,13 +43,13 @@ class ProcessesPage(Gtk.Box):
         hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
 
-        lbl_title = Gtk.Label(label="AEGIS // PROCESS_MONITOR")
+        lbl_title = Gtk.Label(label="Processes")
         lbl_title.add_css_class("title-1")
         lbl_title.add_css_class("bold")
         lbl_title.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_title)
 
-        self.lbl_count = Gtk.Label(label=":: MONITORED PROCESS CANDIDATES ::")
+        self.lbl_count = Gtk.Label(label="Monitored system processes")
         self.lbl_count.add_css_class("aegis-subtext")
         self.lbl_count.set_halign(Gtk.Align.START)
         title_vbox.append(self.lbl_count)
@@ -60,7 +60,7 @@ class ProcessesPage(Gtk.Box):
         spacer.set_hexpand(True)
         hdr_box.append(spacer)
 
-        btn_refresh = Gtk.Button(label="[ REFRESH ]")
+        btn_refresh = Gtk.Button(label="Refresh")
         btn_refresh.add_css_class("tab-btn")
         btn_refresh.set_tooltip_text("Refresh Process List")
         btn_refresh.connect("clicked", lambda b: self.refresh_processes())
@@ -87,7 +87,7 @@ class ProcessesPage(Gtk.Box):
         ctrl_bar.append(self.search_entry)
 
         # Sort Label
-        sort_lbl = Gtk.Label(label="SORT:")
+        sort_lbl = Gtk.Label(label="Sort by:")
         sort_lbl.add_css_class("aegis-subtext")
         ctrl_bar.append(sort_lbl)
 
@@ -116,7 +116,7 @@ class ProcessesPage(Gtk.Box):
 
     def update_processes(self, proc_list: List[Dict[str, Any]]):
         self.raw_processes = proc_list
-        self.lbl_count.set_text(f":: {len(proc_list)} ACTIVE PROCESSES MONITORED BY AEGIS ::")
+        self.lbl_count.set_text(f"{len(proc_list)} active processes monitored")
         self._render_filtered_list()
 
     def refresh_processes(self):

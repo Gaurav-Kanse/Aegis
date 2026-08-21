@@ -42,17 +42,17 @@ class ProcessRow(Adw.ActionRow):
 
         # Priority status check
         if protected:
-            status = "[● PROTECTED]"
+            status = "Protected"
             badge_class = "protected"
         elif expendable:
-            status = "[● EXPENDABLE]"
+            status = "Expendable"
             badge_class = "expendable"
         else:
-            status = "[● NORMAL]"
+            status = "Normal"
             badge_class = "normal"
 
         self.set_title(name)
-        self.set_subtitle(f"PID {pid}  ::  CPU {cpu:.1f}%  ::  RAM {mem_str}  ::  RUN {rt_str}  ::  SCORE {score:.2f}")
+        self.set_subtitle(f"PID {pid}  ·  CPU {cpu:.1f}%  ·  RAM {mem_str}  ·  RUN {rt_str}  ·  SCORE {score:.2f}")
 
         # Status Tag Badge
         tag_label = Gtk.Label(label=status)
@@ -67,40 +67,40 @@ class ProcessRow(Adw.ActionRow):
         btn_box.set_valign(Gtk.Align.CENTER)
 
         if protected:
-            btn_unprot = Gtk.Button(label="[ UNPROTECT ]")
+            btn_unprot = Gtk.Button(label="Unprotect")
             btn_unprot.add_css_class("action-btn-normal")
             btn_unprot.connect("clicked", lambda b: self.on_action("unprotect", self.proc_data))
             btn_box.append(btn_unprot)
 
-            btn_oom = Gtk.Button(label="[ OOM PROT ]")
+            btn_oom = Gtk.Button(label="OOM Protect")
             btn_oom.add_css_class("action-btn-normal")
             btn_oom.connect("clicked", lambda b: self.on_action("oom_protect", self.proc_data))
             btn_box.append(btn_oom)
 
         elif expendable:
-            btn_prot = Gtk.Button(label="[ PROTECT ]")
+            btn_prot = Gtk.Button(label="Protect")
             btn_prot.add_css_class("action-btn-normal")
             btn_prot.connect("clicked", lambda b: self.on_action("protect", self.proc_data))
             btn_box.append(btn_prot)
 
-            btn_unexp = Gtk.Button(label="[ REMOVE ]")
+            btn_unexp = Gtk.Button(label="Remove")
             btn_unexp.add_css_class("action-btn-normal")
             btn_unexp.connect("clicked", lambda b: self.on_action("unmark_expendable", self.proc_data))
             btn_box.append(btn_unexp)
 
         else:  # NORMAL
-            btn_prot = Gtk.Button(label="[ PROTECT ]")
+            btn_prot = Gtk.Button(label="Protect")
             btn_prot.add_css_class("action-btn-normal")
             btn_prot.connect("clicked", lambda b: self.on_action("protect", self.proc_data))
             btn_box.append(btn_prot)
 
-            btn_exp = Gtk.Button(label="[ EXPENDABLE ]")
+            btn_exp = Gtk.Button(label="Expendable")
             btn_exp.add_css_class("action-btn-normal")
             btn_exp.connect("clicked", lambda b: self.on_action("mark_expendable", self.proc_data))
             btn_box.append(btn_exp)
 
         # Terminate Button
-        btn_term = Gtk.Button(label="[ KILL ]")
+        btn_term = Gtk.Button(label="Kill")
         btn_term.add_css_class("action-btn-danger")
         btn_term.connect("clicked", lambda b: self.on_action("terminate", self.proc_data))
         btn_box.append(btn_term)

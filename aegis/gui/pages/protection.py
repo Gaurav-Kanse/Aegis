@@ -36,7 +36,7 @@ class ProtectionPage(Gtk.Box):
         hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
 
-        lbl_title = Gtk.Label(label="AEGIS // POLICY_MANAGER")
+        lbl_title = Gtk.Label(label="Protection")
         lbl_title.add_css_class("title-1")
         lbl_title.add_css_class("bold")
         lbl_title.set_halign(Gtk.Align.START)
@@ -53,7 +53,7 @@ class ProtectionPage(Gtk.Box):
         spacer.set_hexpand(True)
         hdr_box.append(spacer)
 
-        btn_refresh = Gtk.Button(label="[ REFRESH ]")
+        btn_refresh = Gtk.Button(label="Refresh")
         btn_refresh.add_css_class("tab-btn")
         btn_refresh.set_tooltip_text("Refresh Protection Rules")
         btn_refresh.connect("clicked", lambda b: self.refresh_data())
@@ -64,9 +64,9 @@ class ProtectionPage(Gtk.Box):
         # Section 1: Protected Processes Card
         self.sec_prot_box = self._build_section(
             main_box,
-            title=":: PROTECTED PROCESSES ::",
+            title="Protected Processes",
             description="Processes Aegis will never target for automatic recovery or termination.",
-            add_button_label="[ + ADD PROTECTED ]",
+            add_button_label="+ Add Protected",
             on_add_clicked=self._on_add_protected_clicked,
             on_search_changed=self._on_search_prot_changed
         )
@@ -76,9 +76,9 @@ class ProtectionPage(Gtk.Box):
         # Section 2: Expendable Processes Card
         self.sec_exp_box = self._build_section(
             main_box,
-            title=":: EXPENDABLE PROCESSES ::",
+            title="Expendable Processes",
             description="Priority candidates targeted first when memory or thermal thresholds are breached.",
-            add_button_label="[ + ADD EXPENDABLE ]",
+            add_button_label="+ Add Expendable",
             on_add_clicked=self._on_add_expendable_clicked,
             on_search_changed=self._on_search_exp_changed
         )
@@ -99,11 +99,12 @@ class ProtectionPage(Gtk.Box):
         hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         lbl_title = Gtk.Label(label=title)
         lbl_title.add_css_class("aegis-card-header")
+        lbl_title.set_halign(Gtk.Align.START)
         hdr_box.append(lbl_title)
 
-        sp = Gtk.Box()
-        sp.set_hexpand(True)
-        hdr_box.append(sp)
+        spacer = Gtk.Box()
+        spacer.set_hexpand(True)
+        hdr_box.append(spacer)
 
         btn_add = Gtk.Button(label=add_button_label)
         btn_add.add_css_class("action-btn-normal")
@@ -119,7 +120,7 @@ class ProtectionPage(Gtk.Box):
 
         # Search Bar
         search_entry = Gtk.SearchEntry()
-        search_entry.set_placeholder_text("Filter entries by name...")
+        search_entry.set_placeholder_text(f"Filter {title.lower()}...")
         search_entry.connect("search-changed", on_search_changed)
         grp_box.append(search_entry)
 
@@ -131,30 +132,32 @@ class ProtectionPage(Gtk.Box):
 
         parent_box.append(card)
 
-        grp_box.search_entry = search_entry
-        grp_box.list_box = list_box
-        return grp_box
+        # Return a container object with refs
+        container = Gtk.Box()
+        container.search_entry = search_entry
+        container.list_box = list_box
+        return container
 
     def set_ipc_client(self, client: GUIIPCClient):
         self.ipc_client = client
 
-    def refresh_data(self):
-        if self.ipc_client:
-            self.ipc_client.fetch_protection_async(self._on_protection_fetched)
-
-    def update_protection(self, protected: List[str], expendable: List[str]):
-        self.protected_list = protected or []
-        self.expendable_list = expendable or []
+    def update_protection(self, protected_list: List[str], expendable_list: List[str]):
+        self.protected_list = protected_list
+        self.expendable_list = expendable_list
         self._render_protected_list()
         self._render_expendable_list()
 
     def update_active_processes(self, procs: List[Dict[str, Any]]):
-        self.active_processes = procs or []
+        self.active_processes = procs
         self._render_protected_list()
         self._render_expendable_list()
 
-    def _on_protection_fetched(self, res, err):
-        if res and isinstance(res, dict):
+    def refresh_data(self):
+        if self.ipc_client:
+            self.ipc_client.fetch_protection_async(self._on_protection_response)
+
+    def _on_protection_response(self, res, err):
+        if res is not None and isinstance(res, dict):
             self.update_protection(res.get("protected", []), res.get("expendable", []))
 
     def _on_search_prot_changed(self, *args):
@@ -182,17 +185,17 @@ class ProtectionPage(Gtk.Box):
 
             if name in active_names:
                 p_info = active_names[name]
-                row.set_subtitle(f"ACTIVE  ::  PID {p_info.get('pid')}  ::  SCORE {p_info.get('score', 0):.2f}")
+                row.set_subtitle(f"Active  ·  PID {p_info.get('pid')}  ·  Score {p_info.get('score', 0):.2f}")
             else:
-                row.set_subtitle("OFFLINE  ::  NOT CURRENTLY RUNNING")
+                row.set_subtitle("Offline  ·  Not currently running")
 
-            badge = Gtk.Label(label="[● PROTECTED]")
+            badge = Gtk.Label(label="Protected")
             badge.add_css_class("status-badge")
             badge.add_css_class("protected")
             badge.set_valign(Gtk.Align.CENTER)
             row.add_suffix(badge)
 
-            btn_rem = Gtk.Button(label="[ REMOVE ]")
+            btn_rem = Gtk.Button(label="Remove")
             btn_rem.add_css_class("action-btn-normal")
             btn_rem.set_valign(Gtk.Align.CENTER)
             btn_rem.connect("clicked", lambda b, n=name: self._on_remove_protected(n))
@@ -219,17 +222,17 @@ class ProtectionPage(Gtk.Box):
 
             if name in active_names:
                 p_info = active_names[name]
-                row.set_subtitle(f"ACTIVE  ::  PID {p_info.get('pid')}  ::  SCORE {p_info.get('score', 0):.2f}")
+                row.set_subtitle(f"Active  ·  PID {p_info.get('pid')}  ·  Score {p_info.get('score', 0):.2f}")
             else:
-                row.set_subtitle("OFFLINE  ::  NOT CURRENTLY RUNNING")
+                row.set_subtitle("Offline  ·  Not currently running")
 
-            badge = Gtk.Label(label="[● EXPENDABLE]")
+            badge = Gtk.Label(label="Expendable")
             badge.add_css_class("status-badge")
             badge.add_css_class("expendable")
             badge.set_valign(Gtk.Align.CENTER)
             row.add_suffix(badge)
 
-            btn_rem = Gtk.Button(label="[ REMOVE ]")
+            btn_rem = Gtk.Button(label="Remove")
             btn_rem.add_css_class("action-btn-normal")
             btn_rem.set_valign(Gtk.Align.CENTER)
             btn_rem.connect("clicked", lambda b, n=name: self._on_remove_expendable(n))

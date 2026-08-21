@@ -60,8 +60,8 @@ class HealthRingGauge(Gtk.DrawingArea):
         cr.move_to(cx - w / 2.0, cy - h / 2.0 - 6)
         PangoCairo.show_layout(cr, layout)
 
-        # Render State Text (Dot-Matrix bracket format)
-        formatted_state = f"[ {self.state_text} ]"
+        # Render State Text
+        formatted_state = self.state_text
         sub_layout = PangoCairo.create_layout(cr)
         sub_layout.set_text(formatted_state, -1)
         sub_font = Pango.FontDescription("Monospace Bold 8")
