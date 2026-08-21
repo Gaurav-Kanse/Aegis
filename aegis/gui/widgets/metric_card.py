@@ -24,7 +24,7 @@ class MetricCard(Gtk.Frame):
         self.icon.add_css_class("dim-label")
         header_box.append(self.icon)
 
-        title_label = Gtk.Label(label=f":: {title.upper()} ::")
+        title_label = Gtk.Label(label=title.upper())
         title_label.add_css_class("aegis-card-header")
         title_label.set_halign(Gtk.Align.START)
         header_box.append(title_label)

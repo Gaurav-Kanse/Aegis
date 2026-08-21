@@ -33,13 +33,13 @@ class OverviewPage(Gtk.ScrolledWindow):
         header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         
-        lbl_title = Gtk.Label(label="AEGIS // SYSTEM_OVERVIEW")
+        lbl_title = Gtk.Label(label="Overview")
         lbl_title.add_css_class("title-1")
         lbl_title.add_css_class("bold")
         lbl_title.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_title)
 
-        lbl_subtitle = Gtk.Label(label="Kernel-backed resource monitoring & proactive process protection engine.")
+        lbl_subtitle = Gtk.Label(label="Kernel-backed resource monitoring & proactive process protection.")
         lbl_subtitle.add_css_class("aegis-subtext")
         lbl_subtitle.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_subtitle)
@@ -50,7 +50,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         spacer.set_hexpand(True)
         header_box.append(spacer)
 
-        self.lbl_last_update = Gtk.Label(label="UPDATED: JUST NOW")
+        self.lbl_last_update = Gtk.Label(label="Updated just now")
         self.lbl_last_update.add_css_class("aegis-subtext")
         self.lbl_last_update.set_valign(Gtk.Align.CENTER)
         header_box.append(self.lbl_last_update)
@@ -92,7 +92,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         health_vbox.set_margin_bottom(14)
         health_card.set_child(health_vbox)
 
-        lbl_h_header = Gtk.Label(label=":: SYSTEM HEALTH ::")
+        lbl_h_header = Gtk.Label(label="System Health")
         lbl_h_header.add_css_class("aegis-card-header")
         lbl_h_header.set_halign(Gtk.Align.START)
         health_vbox.append(lbl_h_header)
@@ -123,7 +123,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         procs_card.set_child(procs_vbox)
 
         procs_head_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        lbl_p_header = Gtk.Label(label=":: TOP PROCESSES ::")
+        lbl_p_header = Gtk.Label(label="Top Processes")
         lbl_p_header.add_css_class("aegis-card-header")
         lbl_p_header.set_halign(Gtk.Align.START)
         procs_head_box.append(lbl_p_header)
@@ -132,7 +132,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         p_spacer.set_hexpand(True)
         procs_head_box.append(p_spacer)
 
-        btn_view_procs = Gtk.Button(label="[ VIEW ALL ]")
+        btn_view_procs = Gtk.Button(label="View all")
         btn_view_procs.add_css_class("tab-btn")
         btn_view_procs.connect("clicked", lambda b: self._switch_page("processes"))
         procs_head_box.append(btn_view_procs)
@@ -180,7 +180,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         events_card.set_child(events_vbox)
 
         events_head_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        lbl_e_header = Gtk.Label(label=":: RECENT EVENTS ::")
+        lbl_e_header = Gtk.Label(label="Recent Events")
         lbl_e_header.add_css_class("aegis-card-header")
         lbl_e_header.set_halign(Gtk.Align.START)
         events_head_box.append(lbl_e_header)
@@ -189,7 +189,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         e_spacer.set_hexpand(True)
         events_head_box.append(e_spacer)
 
-        btn_view_events = Gtk.Button(label="[ VIEW ALL ]")
+        btn_view_events = Gtk.Button(label="View all")
         btn_view_events.add_css_class("tab-btn")
         btn_view_events.connect("clicked", lambda b: self._switch_page("events"))
         events_head_box.append(btn_view_events)
@@ -213,7 +213,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         chart_card.set_child(chart_vbox)
 
         chart_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        lbl_c_title = Gtk.Label(label=":: RESOURCE HISTORY (PIXELATED TELEMETRY) ::")
+        lbl_c_title = Gtk.Label(label="Resource History")
         lbl_c_title.add_css_class("aegis-card-header")
         chart_hdr.append(lbl_c_title)
 
@@ -221,7 +221,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         c_spacer.set_hexpand(True)
         chart_hdr.append(c_spacer)
 
-        self.lbl_chart_stats = Gtk.Label(label="RAM: --  ::  CPU: --")
+        self.lbl_chart_stats = Gtk.Label(label="RAM: --   CPU: --")
         self.lbl_chart_stats.add_css_class("aegis-subtext")
         chart_hdr.append(self.lbl_chart_stats)
 
