@@ -10,12 +10,12 @@ from aegis.gui.client import GUIIPCClient
 
 PRIMARY_METRICS = [
     ("CPU", "cpu", "%", 100.0),
-    ("Memory", "memory", "%", 100.0),
-    ("Temp", "temperature", "°C", 100.0),
-    ("Disk", "disk", "%", 100.0),
-    ("Network", "network", "Mbps", 0.0),
+    ("MEMORY", "memory", "%", 100.0),
+    ("TEMP", "temperature", "°C", 100.0),
+    ("DISK", "disk", "%", 100.0),
+    ("NET", "network", "Mbps", 0.0),
     ("PSI CPU", "psi_cpu", "%", 100.0),
-    ("PSI Memory", "psi_memory", "%", 100.0),
+    ("PSI MEM", "psi_memory", "%", 100.0),
 ]
 
 TIME_RANGES = [
@@ -54,13 +54,13 @@ class AnalyticsPage(Gtk.Box):
         hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
 
-        lbl_title = Gtk.Label(label="Analytics & Telemetry")
+        lbl_title = Gtk.Label(label="AEGIS // RESOURCE_TELEMETRY")
         lbl_title.add_css_class("title-1")
         lbl_title.add_css_class("bold")
         lbl_title.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_title)
 
-        lbl_sub = Gtk.Label(label="Clear, real-time resource utilization history & trend analysis")
+        lbl_sub = Gtk.Label(label="Real-time time-series telemetry with pixelated digital step graphs.")
         lbl_sub.add_css_class("aegis-subtext")
         lbl_sub.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_sub)
@@ -71,15 +71,15 @@ class AnalyticsPage(Gtk.Box):
         spacer.set_hexpand(True)
         hdr_box.append(spacer)
 
-        btn_refresh = Gtk.Button()
-        btn_refresh.set_icon_name("view-refresh-symbolic")
+        btn_refresh = Gtk.Button(label="[ REFRESH ]")
+        btn_refresh.add_css_class("tab-btn")
         btn_refresh.set_tooltip_text("Refresh Telemetry History")
         btn_refresh.connect("clicked", lambda b: self.refresh_history())
         hdr_box.append(btn_refresh)
 
         main_vbox.append(hdr_box)
 
-        # Quick Metric Filter Tabs Bar (CPU, Memory, Temp, Disk, Network, PSI)
+        # Quick Metric Filter Tabs Bar
         filter_card = Gtk.Frame()
         filter_card.add_css_class("aegis-card")
 
@@ -92,7 +92,7 @@ class AnalyticsPage(Gtk.Box):
 
         self.metric_btns: List[Gtk.Button] = []
         for idx, (label, key, unit, scale) in enumerate(PRIMARY_METRICS):
-            btn = Gtk.Button(label=label)
+            btn = Gtk.Button(label=f"[ {label} ]")
             btn.add_css_class("tab-btn")
             if idx == 0:
                 btn.add_css_class("active")
@@ -104,10 +104,10 @@ class AnalyticsPage(Gtk.Box):
         f_spacer.set_hexpand(True)
         filter_box.append(f_spacer)
 
-        # Time Window Selector (5m, 30m, 1h)
+        # Time Window Selector
         self.range_btns: List[Gtk.Button] = []
         for idx, (lbl, secs) in enumerate(TIME_RANGES):
-            btn = Gtk.Button(label=lbl)
+            btn = Gtk.Button(label=f"[ {lbl.upper()} ]")
             btn.add_css_class("tab-btn")
             if idx == 0:
                 btn.add_css_class("active")
@@ -117,7 +117,7 @@ class AnalyticsPage(Gtk.Box):
 
         main_vbox.append(filter_card)
 
-        # Stats Cards Row (CURRENT, AVERAGE, MINIMUM, MAXIMUM)
+        # Stats Cards Row
         stats_grid = Gtk.Grid()
         stats_grid.set_column_spacing(12)
         stats_grid.set_row_spacing(12)
@@ -141,7 +141,7 @@ class AnalyticsPage(Gtk.Box):
         chart_card.set_child(chart_vbox)
 
         chart_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        self.chart_header_lbl = Gtk.Label(label="Resource Telemetry Trend")
+        self.chart_header_lbl = Gtk.Label(label=":: TELEMETRY STEP GRAPH ::")
         self.chart_header_lbl.add_css_class("aegis-card-header")
         self.chart_header_lbl.set_halign(Gtk.Align.START)
         chart_hdr.append(self.chart_header_lbl)
@@ -150,7 +150,7 @@ class AnalyticsPage(Gtk.Box):
         c_spacer.set_hexpand(True)
         chart_hdr.append(c_spacer)
 
-        self.lbl_legend_info = Gtk.Label(label="— Trend Line  - - Alert Threshold (90%)")
+        self.lbl_legend_info = Gtk.Label(label="■ STEP_LINE   - - ALERT_LIMIT (90%)")
         self.lbl_legend_info.add_css_class("aegis-subtext")
         chart_hdr.append(self.lbl_legend_info)
 
@@ -172,7 +172,7 @@ class AnalyticsPage(Gtk.Box):
         box.set_margin_top(10)
         box.set_margin_bottom(10)
 
-        lbl_title = Gtk.Label(label=title)
+        lbl_title = Gtk.Label(label=f":: {title} ::")
         lbl_title.add_css_class("aegis-card-header")
         lbl_title.set_halign(Gtk.Align.START)
         box.append(lbl_title)
@@ -247,7 +247,7 @@ class AnalyticsPage(Gtk.Box):
         unit = metric_info[2]
         title = metric_info[0]
 
-        self.chart_header_lbl.set_text(f"{title.upper()} TELEMETRY HISTORY — LAST {TIME_RANGES[self.selected_time_range_idx][0].upper()}")
+        self.chart_header_lbl.set_text(f":: {title} TELEMETRY HISTORY — LAST {TIME_RANGES[self.selected_time_range_idx][0].upper()} ::")
 
         if not samples:
             self.card_curr.set_text("--")
@@ -275,21 +275,29 @@ class AnalyticsPage(Gtk.Box):
         self.drawing_area.queue_draw()
 
     def _on_draw_chart(self, area, cr: cairo.Context, width: int, height: int):
-        # Background
-        cr.set_source_rgb(0.09, 0.09, 0.11)
+        # Draw background matrix canvas
+        cr.set_source_rgb(0.04, 0.04, 0.06)
         cr.rectangle(0, 0, width, height)
         cr.fill()
 
+        # Render Dot Matrix Background Grid
+        cr.set_source_rgba(1.0, 1.0, 1.0, 0.07)
+        grid_spacing = 16
+        for x in range(8, width, grid_spacing):
+            for y in range(8, height, grid_spacing):
+                cr.rectangle(x, y, 1.5, 1.5)
+                cr.fill()
+
         samples = self._get_window_samples()
         if not samples:
-            cr.set_source_rgba(0.6, 0.6, 0.6, 0.6)
-            cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-            cr.set_font_size(13)
-            cr.move_to(width / 2 - 80, height / 2)
-            cr.show_text("Waiting for Aegis telemetry history...")
+            cr.set_source_rgba(0.6, 0.6, 0.65, 0.7)
+            cr.select_font_face("Monospace", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+            cr.set_font_size(12)
+            cr.move_to(width / 2 - 100, height / 2)
+            cr.show_text("[ WAITING FOR TELEMETRY... ]")
             return
 
-        margin_left = 60
+        margin_left = 65
         margin_right = 30
         margin_top = 25
         margin_bottom = 35
@@ -310,40 +318,33 @@ class AnalyticsPage(Gtk.Box):
         if max_scale <= 0.0:
             max_scale = max(1.0, max(vals) * 1.25)
 
-        # 1. Y-Axis Grid Lines & Tick Labels (100%, 75%, 50%, 25%, 0%)
+        # 1. Y-Axis Ticks (Monospace Pixel Text)
         cr.set_line_width(1)
-        cr.select_font_face("Sans", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_NORMAL)
-        cr.set_font_size(10)
+        cr.select_font_face("Monospace", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
+        cr.set_font_size(9)
 
         for i in range(5):
             ratio = (4 - i) / 4.0
             y = margin_top + chart_h * (1.0 - ratio)
 
-            # Grid Line
-            cr.set_source_rgba(1.0, 1.0, 1.0, 0.05)
-            cr.move_to(margin_left, y)
-            cr.line_to(width - margin_right, y)
-            cr.stroke()
-
-            # Axis Tick Label
             val_tick = max_scale * ratio
             tick_str = f"{val_tick:.0f}{unit}" if unit == "%" or max_scale >= 10 else f"{val_tick:.1f}{unit}"
             cr.set_source_rgba(0.6, 0.6, 0.65, 0.8)
-            cr.move_to(10, y + 4)
-            cr.show_text(tick_str)
+            cr.move_to(10, y + 3)
+            cr.show_text(f"{tick_str:>6}")
 
-        # 2. Threshold Warning Line (Dashed red line at 90% if scale == 100%)
+        # 2. Threshold Alert Line (Dashed Red Line)
         if max_scale == 100.0:
             thresh_y = margin_top + chart_h * (1.0 - 0.90)
-            cr.set_source_rgba(0.97, 0.44, 0.44, 0.5)
-            cr.set_line_width(1)
+            cr.set_source_rgba(1.0, 0.23, 0.19, 0.6)
+            cr.set_line_width(1.5)
             cr.set_dash([4, 4], 0)
             cr.move_to(margin_left, thresh_y)
             cr.line_to(width - margin_right, thresh_y)
             cr.stroke()
-            cr.set_dash([], 0)  # Reset dash
+            cr.set_dash([], 0)
 
-        # 3. X-Axis Time Labels (-5m, -2.5m, now)
+        # 3. X-Axis Time Ticks
         time_label = TIME_RANGES[self.selected_time_range_idx][0]
         cr.set_source_rgba(0.6, 0.6, 0.65, 0.8)
         cr.move_to(margin_left, height - 10)
@@ -352,10 +353,10 @@ class AnalyticsPage(Gtk.Box):
         cr.move_to(margin_left + chart_w / 2 - 15, height - 10)
         cr.show_text(f"-{int(TIME_RANGES[self.selected_time_range_idx][1] / 120)}m")
 
-        cr.move_to(width - margin_right - 25, height - 10)
-        cr.show_text("NOW")
+        cr.move_to(width - margin_right - 30, height - 10)
+        cr.show_text("[NOW]")
 
-        # 4. Plot Trend Line & Shaded Area
+        # 4. Pixelated Step Plot Line
         n = len(vals)
         step_x = chart_w / max(1, n - 1)
         points = []
@@ -367,29 +368,21 @@ class AnalyticsPage(Gtk.Box):
             points.append((x, y))
 
         if points:
-            # Gradient fill under line
-            cr.move_to(margin_left, margin_top + chart_h)
-            for x, y in points:
-                cr.line_to(x, y)
-            cr.line_to(points[-1][0], margin_top + chart_h)
-            cr.close_path()
-
-            grad = cairo.LinearGradient(0, margin_top, 0, margin_top + chart_h)
-            grad.add_color_stop_rgba(0, 1.0, 1.0, 1.0, 0.18)
-            grad.add_color_stop_rgba(1, 1.0, 1.0, 1.0, 0.01)
-            cr.set_source(grad)
-            cr.fill()
-
-            # Crisp main plot line
-            cr.set_source_rgba(0.95, 0.95, 0.96, 0.95)
+            # Crisp Pixelated Stepped Line
+            cr.set_source_rgba(1.0, 1.0, 1.0, 0.95)
             cr.set_line_width(2.0)
             cr.move_to(points[0][0], points[0][1])
-            for x, y in points[1:]:
-                cr.line_to(x, y)
+
+            for i in range(1, len(points)):
+                prev_x, prev_y = points[i-1]
+                curr_x, curr_y = points[i]
+                # Square Step Transition
+                cr.line_to(curr_x, prev_y)
+                cr.line_to(curr_x, curr_y)
             cr.stroke()
 
-            # Highlight current value point with a subtle white dot
+            # Highlight Current Value with a Pixel Square Marker
             cx, cy = points[-1]
             cr.set_source_rgba(1.0, 1.0, 1.0, 1.0)
-            cr.arc(cx, cy, 4, 0, 2 * 3.14159)
+            cr.rectangle(cx - 3, cy - 3, 6, 6)
             cr.fill()

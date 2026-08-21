@@ -36,13 +36,13 @@ class ProtectionPage(Gtk.Box):
         hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
 
-        lbl_title = Gtk.Label(label="Protection & Rules Manager")
+        lbl_title = Gtk.Label(label="AEGIS // POLICY_MANAGER")
         lbl_title.add_css_class("title-1")
         lbl_title.add_css_class("bold")
         lbl_title.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_title)
 
-        lbl_sub = Gtk.Label(label="Configure system protection lists and expendable process priority rules")
+        lbl_sub = Gtk.Label(label="Configure process protection whitelists and OOM priority recovery policies.")
         lbl_sub.add_css_class("aegis-subtext")
         lbl_sub.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_sub)
@@ -53,8 +53,8 @@ class ProtectionPage(Gtk.Box):
         spacer.set_hexpand(True)
         hdr_box.append(spacer)
 
-        btn_refresh = Gtk.Button()
-        btn_refresh.set_icon_name("view-refresh-symbolic")
+        btn_refresh = Gtk.Button(label="[ REFRESH ]")
+        btn_refresh.add_css_class("tab-btn")
         btn_refresh.set_tooltip_text("Refresh Protection Rules")
         btn_refresh.connect("clicked", lambda b: self.refresh_data())
         hdr_box.append(btn_refresh)
@@ -64,9 +64,9 @@ class ProtectionPage(Gtk.Box):
         # Section 1: Protected Processes Card
         self.sec_prot_box = self._build_section(
             main_box,
-            title="PROTECTED PROCESSES",
+            title=":: PROTECTED PROCESSES ::",
             description="Processes Aegis will never target for automatic recovery or termination.",
-            add_button_label="+ Add Protected",
+            add_button_label="[ + ADD PROTECTED ]",
             on_add_clicked=self._on_add_protected_clicked,
             on_search_changed=self._on_search_prot_changed
         )
@@ -76,9 +76,9 @@ class ProtectionPage(Gtk.Box):
         # Section 2: Expendable Processes Card
         self.sec_exp_box = self._build_section(
             main_box,
-            title="EXPENDABLE PROCESSES",
-            description="Priority candidates targeted first when memory/resource limits are exceeded.",
-            add_button_label="+ Add Expendable",
+            title=":: EXPENDABLE PROCESSES ::",
+            description="Priority candidates targeted first when memory or thermal thresholds are breached.",
+            add_button_label="[ + ADD EXPENDABLE ]",
             on_add_clicked=self._on_add_expendable_clicked,
             on_search_changed=self._on_search_exp_changed
         )
@@ -117,9 +117,9 @@ class ProtectionPage(Gtk.Box):
         lbl_desc.set_halign(Gtk.Align.START)
         grp_box.append(lbl_desc)
 
-        # Search Bar inside Card
+        # Search Bar
         search_entry = Gtk.SearchEntry()
-        search_entry.set_placeholder_text("Filter entries...")
+        search_entry.set_placeholder_text("Filter entries by name...")
         search_entry.connect("search-changed", on_search_changed)
         grp_box.append(search_entry)
 
@@ -131,7 +131,6 @@ class ProtectionPage(Gtk.Box):
 
         parent_box.append(card)
 
-        # Attach references
         grp_box.search_entry = search_entry
         grp_box.list_box = list_box
         return grp_box
@@ -183,17 +182,17 @@ class ProtectionPage(Gtk.Box):
 
             if name in active_names:
                 p_info = active_names[name]
-                row.set_subtitle(f"Active  •  PID {p_info.get('pid')}  •  Score {p_info.get('score', 0):.2f}")
+                row.set_subtitle(f"ACTIVE  ::  PID {p_info.get('pid')}  ::  SCORE {p_info.get('score', 0):.2f}")
             else:
-                row.set_subtitle("Not currently running")
+                row.set_subtitle("OFFLINE  ::  NOT CURRENTLY RUNNING")
 
-            badge = Gtk.Label(label="PROTECTED")
+            badge = Gtk.Label(label="[● PROTECTED]")
             badge.add_css_class("status-badge")
             badge.add_css_class("protected")
             badge.set_valign(Gtk.Align.CENTER)
             row.add_suffix(badge)
 
-            btn_rem = Gtk.Button(label="Remove")
+            btn_rem = Gtk.Button(label="[ REMOVE ]")
             btn_rem.add_css_class("action-btn-normal")
             btn_rem.set_valign(Gtk.Align.CENTER)
             btn_rem.connect("clicked", lambda b, n=name: self._on_remove_protected(n))
@@ -220,17 +219,17 @@ class ProtectionPage(Gtk.Box):
 
             if name in active_names:
                 p_info = active_names[name]
-                row.set_subtitle(f"Active  •  PID {p_info.get('pid')}  •  Score {p_info.get('score', 0):.2f}")
+                row.set_subtitle(f"ACTIVE  ::  PID {p_info.get('pid')}  ::  SCORE {p_info.get('score', 0):.2f}")
             else:
-                row.set_subtitle("Not currently running")
+                row.set_subtitle("OFFLINE  ::  NOT CURRENTLY RUNNING")
 
-            badge = Gtk.Label(label="EXPENDABLE")
+            badge = Gtk.Label(label="[● EXPENDABLE]")
             badge.add_css_class("status-badge")
             badge.add_css_class("expendable")
             badge.set_valign(Gtk.Align.CENTER)
             row.add_suffix(badge)
 
-            btn_rem = Gtk.Button(label="Remove")
+            btn_rem = Gtk.Button(label="[ REMOVE ]")
             btn_rem.add_css_class("action-btn-normal")
             btn_rem.set_valign(Gtk.Align.CENTER)
             btn_rem.connect("clicked", lambda b, n=name: self._on_remove_expendable(n))
@@ -286,7 +285,6 @@ class ProtectionPage(Gtk.Box):
         if err is not None:
             err_msg = str(err)
             if "PROTECTION_CONFLICT" in err_msg or "protected" in err_msg:
-                # Conflict resolution dialog
                 self._show_conflict_dialog(err_msg)
             else:
                 self._show_error_dialog("Error", err_msg)
@@ -305,7 +303,6 @@ class ProtectionPage(Gtk.Box):
 
         def _on_response(d, response_id):
             if response_id == "override" and self.ipc_client:
-                # Extract process name from message or retry with force=True
                 pass
 
         dialog.connect("response", _on_response)

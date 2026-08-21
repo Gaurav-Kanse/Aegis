@@ -17,12 +17,12 @@ from aegis.gui.pages.protection import ProtectionPage
 from aegis.gui.pages.settings import SettingsPage
 
 PAGES = [
-    ("overview", "Overview", "security-high-symbolic"),
-    ("processes", "Processes", "system-run-symbolic"),
-    ("analytics", "Analytics", "utilities-system-monitor-symbolic"),
-    ("events", "Events", "dialog-warning-symbolic"),
-    ("protection", "Protection", "emblem-readonly-symbolic"),
-    ("settings", "Settings", "emblem-system-symbolic"),
+    ("overview",   "OVR :: OVERVIEW",   "security-high-symbolic"),
+    ("processes",  "SYS :: PROCESSES",  "system-run-symbolic"),
+    ("analytics",  "TLM :: TELEMETRY",  "utilities-system-monitor-symbolic"),
+    ("events",     "LOG :: EVENTS",     "dialog-warning-symbolic"),
+    ("protection", "POL :: PROTECTION", "emblem-readonly-symbolic"),
+    ("settings",   "CFG :: SETTINGS",   "emblem-system-symbolic"),
 ]
 
 class AegisWindow(Adw.ApplicationWindow):
@@ -110,7 +110,7 @@ class AegisWindow(Adw.ApplicationWindow):
         lbl_brand.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_brand)
 
-        lbl_sub = Gtk.Label(label="SYSTEM GUARDIAN")
+        lbl_sub = Gtk.Label(label="// SYSTEM_GUARDIAN v0.1.0")
         lbl_sub.add_css_class("sidebar-subtitle")
         lbl_sub.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_sub)
@@ -160,18 +160,18 @@ class AegisWindow(Adw.ApplicationWindow):
         d_box.set_margin_bottom(12)
         daemon_card.set_child(d_box)
 
-        self.lbl_daemon_status = Gtk.Label(label="● Running")
+        self.lbl_daemon_status = Gtk.Label(label="[● RUNNING]")
         self.lbl_daemon_status.add_css_class("status-badge")
         self.lbl_daemon_status.add_css_class("normal")
         self.lbl_daemon_status.set_halign(Gtk.Align.START)
         d_box.append(self.lbl_daemon_status)
 
-        self.lbl_uptime = Gtk.Label(label="Uptime: 0m")
+        self.lbl_uptime = Gtk.Label(label="UPTIME: 0m")
         self.lbl_uptime.add_css_class("aegis-subtext")
         self.lbl_uptime.set_halign(Gtk.Align.START)
         d_box.append(self.lbl_uptime)
 
-        self.btn_daemon_toggle = Gtk.Button(label="Stop Daemon")
+        self.btn_daemon_toggle = Gtk.Button(label="[ STOP DAEMON ]")
         self.btn_daemon_toggle.add_css_class("action-btn-normal")
         self.btn_daemon_toggle.set_margin_top(4)
         self.btn_daemon_toggle.connect("clicked", self._on_daemon_toggle_clicked)
@@ -193,19 +193,20 @@ class AegisWindow(Adw.ApplicationWindow):
     def _build_offline_view(self):
         offline_page = Adw.StatusPage()
         offline_page.set_icon_name("network-error-symbolic")
-        offline_page.set_title("Aegis Offline")
-        offline_page.set_description("The Aegis daemon is not currently running.")
+        offline_page.set_title("[ DAEMON OFFLINE ]")
+        offline_page.set_description("The Aegis daemon is not currently running.\nStart the daemon to enable live telemetry.")
 
         btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         btn_box.set_halign(Gtk.Align.CENTER)
         btn_box.set_margin_top(12)
 
-        btn_retry = Gtk.Button(label="Retry")
+        btn_retry = Gtk.Button(label="[ RETRY CONNECTION ]")
         btn_retry.add_css_class("suggested-action")
         btn_retry.connect("clicked", self._on_retry_clicked)
         btn_box.append(btn_retry)
 
-        btn_start = Gtk.Button(label="Start Daemon")
+        btn_start = Gtk.Button(label="[ START DAEMON ]")
+        btn_start.add_css_class("action-btn-normal")
         btn_start.connect("clicked", self._on_start_daemon_clicked)
         btn_box.append(btn_start)
 
@@ -227,14 +228,14 @@ class AegisWindow(Adw.ApplicationWindow):
         m = elapsed // 60
         h = m // 60
         if h > 0:
-            up_str = f"Uptime: {h}h {m % 60}m"
+            up_str = f"UPTIME: {h}h {m % 60}m"
         else:
-            up_str = f"Uptime: {m}m"
+            up_str = f"UPTIME: {m}m"
         self.lbl_uptime.set_text(up_str)
-        self.lbl_daemon_status.set_text("● Running")
+        self.lbl_daemon_status.set_text("[● RUNNING]")
         self.lbl_daemon_status.add_css_class("normal")
         self.lbl_daemon_status.remove_css_class("critical")
-        self.btn_daemon_toggle.set_label("Stop Daemon")
+        self.btn_daemon_toggle.set_label("[ STOP DAEMON ]")
 
     def _on_processes_response(self, procs, err):
         if procs is not None and isinstance(procs, list):
@@ -260,10 +261,10 @@ class AegisWindow(Adw.ApplicationWindow):
     def show_offline(self):
         self.overlay_stack.set_visible_child_name("offline")
         self.page_settings.set_offline(True)
-        self.lbl_daemon_status.set_text("○ Offline")
+        self.lbl_daemon_status.set_text("[○ OFFLINE]")
         self.lbl_daemon_status.add_css_class("critical")
         self.lbl_daemon_status.remove_css_class("normal")
-        self.btn_daemon_toggle.set_label("Start Daemon")
+        self.btn_daemon_toggle.set_label("[ START DAEMON ]")
 
     def _on_retry_clicked(self, button):
         self.ipc_client.fetch_status_async(self._on_retry_response)
@@ -282,7 +283,7 @@ class AegisWindow(Adw.ApplicationWindow):
             print(f"[aegis-gui] Failed to start daemon: {e}")
 
     def _on_daemon_toggle_clicked(self, button):
-        if self.btn_daemon_toggle.get_label() == "Start Daemon":
+        if self.btn_daemon_toggle.get_label() == "[ START DAEMON ]":
             self._on_start_daemon_clicked(button)
         else:
             self.show_offline()

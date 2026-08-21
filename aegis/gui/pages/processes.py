@@ -43,13 +43,13 @@ class ProcessesPage(Gtk.Box):
         hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
 
-        lbl_title = Gtk.Label(label="Processes")
+        lbl_title = Gtk.Label(label="AEGIS // PROCESS_MONITOR")
         lbl_title.add_css_class("title-1")
         lbl_title.add_css_class("bold")
         lbl_title.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_title)
 
-        self.lbl_count = Gtk.Label(label="Live process candidate scoring & real-time controls")
+        self.lbl_count = Gtk.Label(label=":: MONITORED PROCESS CANDIDATES ::")
         self.lbl_count.add_css_class("aegis-subtext")
         self.lbl_count.set_halign(Gtk.Align.START)
         title_vbox.append(self.lbl_count)
@@ -60,8 +60,8 @@ class ProcessesPage(Gtk.Box):
         spacer.set_hexpand(True)
         hdr_box.append(spacer)
 
-        btn_refresh = Gtk.Button()
-        btn_refresh.set_icon_name("view-refresh-symbolic")
+        btn_refresh = Gtk.Button(label="[ REFRESH ]")
+        btn_refresh.add_css_class("tab-btn")
         btn_refresh.set_tooltip_text("Refresh Process List")
         btn_refresh.connect("clicked", lambda b: self.refresh_processes())
         hdr_box.append(btn_refresh)
@@ -87,7 +87,7 @@ class ProcessesPage(Gtk.Box):
         ctrl_bar.append(self.search_entry)
 
         # Sort Label
-        sort_lbl = Gtk.Label(label="Sort:")
+        sort_lbl = Gtk.Label(label="SORT:")
         sort_lbl.add_css_class("aegis-subtext")
         ctrl_bar.append(sort_lbl)
 
@@ -116,7 +116,7 @@ class ProcessesPage(Gtk.Box):
 
     def update_processes(self, proc_list: List[Dict[str, Any]]):
         self.raw_processes = proc_list
-        self.lbl_count.set_text(f"{len(proc_list)} active processes being monitored by Aegis")
+        self.lbl_count.set_text(f":: {len(proc_list)} ACTIVE PROCESSES MONITORED BY AEGIS ::")
         self._render_filtered_list()
 
     def refresh_processes(self):
@@ -131,7 +131,6 @@ class ProcessesPage(Gtk.Box):
         self._render_filtered_list()
 
     def _render_filtered_list(self):
-        # 1. Local Search Filter
         query = self.search_entry.get_text().strip().lower()
         filtered = []
         for p in self.raw_processes:
@@ -140,7 +139,6 @@ class ProcessesPage(Gtk.Box):
             if not query or query in name_str or query in pid_str:
                 filtered.append(p)
 
-        # 2. Sorting
         sel_idx = self.sort_dropdown.get_selected()
         sort_key = SORT_OPTIONS[sel_idx][1] if 0 <= sel_idx < len(SORT_OPTIONS) else "score_desc"
 
@@ -157,14 +155,12 @@ class ProcessesPage(Gtk.Box):
         elif sort_key == "pid_asc":
             filtered.sort(key=lambda x: x.get("pid", 0))
 
-        # 3. Clear ListBox
         while True:
             child = self.list_box.get_first_child()
             if not child:
                 break
             self.list_box.remove(child)
 
-        # 4. Render Rows (top 150)
         for p in filtered[:150]:
             row = ProcessRow(p, self._handle_process_action)
             self.list_box.append(row)

@@ -33,13 +33,13 @@ class OverviewPage(Gtk.ScrolledWindow):
         header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         
-        lbl_title = Gtk.Label(label="System Overview")
+        lbl_title = Gtk.Label(label="AEGIS // SYSTEM_OVERVIEW")
         lbl_title.add_css_class("title-1")
         lbl_title.add_css_class("bold")
         lbl_title.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_title)
 
-        lbl_subtitle = Gtk.Label(label="Aegis is actively monitoring system resources & protecting core processes.")
+        lbl_subtitle = Gtk.Label(label="Kernel-backed resource monitoring & proactive process protection engine.")
         lbl_subtitle.add_css_class("aegis-subtext")
         lbl_subtitle.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_subtitle)
@@ -50,7 +50,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         spacer.set_hexpand(True)
         header_box.append(spacer)
 
-        self.lbl_last_update = Gtk.Label(label="Updated: just now")
+        self.lbl_last_update = Gtk.Label(label="UPDATED: JUST NOW")
         self.lbl_last_update.add_css_class("aegis-subtext")
         self.lbl_last_update.set_valign(Gtk.Align.CENTER)
         header_box.append(self.lbl_last_update)
@@ -66,9 +66,9 @@ class OverviewPage(Gtk.ScrolledWindow):
 
         self.card_mem = MetricCard("Memory", "drive-multidisk-symbolic")
         self.card_cpu = MetricCard("CPU", "cpu-symbolic")
-        self.card_temp = MetricCard("Temperature", "temperature-symbolic")
+        self.card_temp = MetricCard("Temp", "temperature-symbolic")
         self.card_disk = MetricCard("Disk", "drive-harddisk-symbolic")
-        self.card_net = MetricCard("Network", "network-transmit-receive-symbolic")
+        self.card_net = MetricCard("Net", "network-transmit-receive-symbolic")
 
         grid_metrics.attach(self.card_mem, 0, 0, 1, 1)
         grid_metrics.attach(self.card_cpu, 1, 0, 1, 1)
@@ -92,7 +92,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         health_vbox.set_margin_bottom(14)
         health_card.set_child(health_vbox)
 
-        lbl_h_header = Gtk.Label(label="SYSTEM HEALTH")
+        lbl_h_header = Gtk.Label(label=":: SYSTEM HEALTH ::")
         lbl_h_header.add_css_class("aegis-card-header")
         lbl_h_header.set_halign(Gtk.Align.START)
         health_vbox.append(lbl_h_header)
@@ -101,7 +101,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         self.health_ring.set_halign(Gtk.Align.CENTER)
         health_vbox.append(self.health_ring)
 
-        # Status Rows
+        # Subsystem Status Rows
         self.lbl_mem_sub = self._add_subsystem_row(health_vbox, "Memory Pressure")
         self.lbl_cpu_sub = self._add_subsystem_row(health_vbox, "CPU Pressure")
         self.lbl_temp_sub = self._add_subsystem_row(health_vbox, "Thermal State")
@@ -123,7 +123,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         procs_card.set_child(procs_vbox)
 
         procs_head_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        lbl_p_header = Gtk.Label(label="TOP PROCESSES")
+        lbl_p_header = Gtk.Label(label=":: TOP PROCESSES ::")
         lbl_p_header.add_css_class("aegis-card-header")
         lbl_p_header.set_halign(Gtk.Align.START)
         procs_head_box.append(lbl_p_header)
@@ -132,8 +132,8 @@ class OverviewPage(Gtk.ScrolledWindow):
         p_spacer.set_hexpand(True)
         procs_head_box.append(p_spacer)
 
-        btn_view_procs = Gtk.Button(label="View All")
-        btn_view_procs.add_css_class("flat")
+        btn_view_procs = Gtk.Button(label="[ VIEW ALL ]")
+        btn_view_procs.add_css_class("tab-btn")
         btn_view_procs.connect("clicked", lambda b: self._switch_page("processes"))
         procs_head_box.append(btn_view_procs)
 
@@ -143,20 +143,20 @@ class OverviewPage(Gtk.ScrolledWindow):
         p_hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         p_hdr_box.add_css_class("aegis-subtext")
         
-        lbl_p_name = Gtk.Label(label="Process")
+        lbl_p_name = Gtk.Label(label="PROCESS")
         lbl_p_name.set_hexpand(True)
         lbl_p_name.set_halign(Gtk.Align.START)
         p_hdr_box.append(lbl_p_name)
 
-        lbl_p_cpu = Gtk.Label(label="CPU")
+        lbl_p_cpu = Gtk.Label(label="CPU%")
         lbl_p_cpu.set_size_request(60, -1)
         p_hdr_box.append(lbl_p_cpu)
 
-        lbl_p_mem = Gtk.Label(label="Memory")
+        lbl_p_mem = Gtk.Label(label="RAM")
         lbl_p_mem.set_size_request(80, -1)
         p_hdr_box.append(lbl_p_mem)
 
-        lbl_p_score = Gtk.Label(label="Score")
+        lbl_p_score = Gtk.Label(label="SCORE")
         lbl_p_score.set_size_request(50, -1)
         p_hdr_box.append(lbl_p_score)
 
@@ -180,7 +180,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         events_card.set_child(events_vbox)
 
         events_head_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        lbl_e_header = Gtk.Label(label="RECENT EVENTS")
+        lbl_e_header = Gtk.Label(label=":: RECENT EVENTS ::")
         lbl_e_header.add_css_class("aegis-card-header")
         lbl_e_header.set_halign(Gtk.Align.START)
         events_head_box.append(lbl_e_header)
@@ -189,8 +189,8 @@ class OverviewPage(Gtk.ScrolledWindow):
         e_spacer.set_hexpand(True)
         events_head_box.append(e_spacer)
 
-        btn_view_events = Gtk.Button(label="View All")
-        btn_view_events.add_css_class("flat")
+        btn_view_events = Gtk.Button(label="[ VIEW ALL ]")
+        btn_view_events.add_css_class("tab-btn")
         btn_view_events.connect("clicked", lambda b: self._switch_page("events"))
         events_head_box.append(btn_view_events)
 
@@ -201,7 +201,7 @@ class OverviewPage(Gtk.ScrolledWindow):
 
         middle_box.append(events_card)
 
-        # ---------------- Section 3: Resource History Live Chart Card ----------------
+        # ---------------- Section 3: Resource History Live Pixel Chart Card ----------------
         chart_card = Gtk.Frame()
         chart_card.add_css_class("aegis-card")
 
@@ -213,7 +213,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         chart_card.set_child(chart_vbox)
 
         chart_hdr = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        lbl_c_title = Gtk.Label(label="RESOURCE HISTORY")
+        lbl_c_title = Gtk.Label(label=":: RESOURCE HISTORY (PIXELATED TELEMETRY) ::")
         lbl_c_title.add_css_class("aegis-card-header")
         chart_hdr.append(lbl_c_title)
 
@@ -221,7 +221,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         c_spacer.set_hexpand(True)
         chart_hdr.append(c_spacer)
 
-        self.lbl_chart_stats = Gtk.Label(label="RAM: -- | CPU: --")
+        self.lbl_chart_stats = Gtk.Label(label="RAM: --  ::  CPU: --")
         self.lbl_chart_stats.add_css_class("aegis-subtext")
         chart_hdr.append(self.lbl_chart_stats)
 
@@ -242,7 +242,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         lbl_name.set_hexpand(True)
         row.append(lbl_name)
 
-        lbl_val = Gtk.Label(label="Normal")
+        lbl_val = Gtk.Label(label="[● NORMAL]")
         lbl_val.add_css_class("status-badge")
         lbl_val.add_css_class("normal")
         row.append(lbl_val)
@@ -258,7 +258,7 @@ class OverviewPage(Gtk.ScrolledWindow):
         if not status:
             return
 
-        self.lbl_last_update.set_text(f"Updated: {time.strftime('%H:%M:%S')}")
+        self.lbl_last_update.set_text(f"UPDATED: {time.strftime('%H:%M:%S')}")
 
         health = status.get("health", 100)
         state = status.get("state", "PROTECTED")
@@ -269,39 +269,34 @@ class OverviewPage(Gtk.ScrolledWindow):
         used = mem.get("used", 0.0)
         total = mem.get("total", 0.0)
         pct = mem.get("percent", 0.0)
-        self.card_mem.set_metric(f"{pct:.0f}%", pct / 100.0, f"{used:.1f} / {total:.1f} GB")
+        self.card_mem.set_metric(f"{pct:.0f}%", pct / 100.0, f"{used:.1f}/{total:.1f} GB")
 
         # CPU Card
         cpu_pct = status.get("cpu", 0.0)
-        self.card_cpu.set_metric(f"{cpu_pct:.0f}%", cpu_pct / 100.0, "Utilization")
+        self.card_cpu.set_metric(f"{cpu_pct:.0f}%", cpu_pct / 100.0, "UTILIZATION")
 
-        # Temperature Card
+        # Temp Card
         temp_c = status.get("temperature", 0.0)
-        self.card_temp.set_metric(f"{temp_c:.0f}°C", temp_c / 100.0, "Normal" if temp_c < 85 else "High")
+        self.card_temp.set_metric(f"{temp_c:.0f}°C", temp_c / 100.0, "NORMAL" if temp_c < 85 else "HIGH")
 
         # Disk Card
         disk = status.get("disk", {})
         root_pct = disk.get("/", 0.0)
-        self.card_disk.set_metric(f"{root_pct:.0f}%", root_pct / 100.0, "Storage used")
+        self.card_disk.set_metric(f"{root_pct:.0f}%", root_pct / 100.0, "STORAGE USED")
 
         # Network Card
         net = status.get("network", {})
         tot_net = sum(v for k, v in net.items() if isinstance(v, (int, float)))
-        self.card_net.set_metric(f"{tot_net:.1f}", min(1.0, tot_net / 1000.0), "Mbps activity")
+        self.card_net.set_metric(f"{tot_net:.1f}", min(1.0, tot_net / 1000.0), "MBPS TRAFFIC")
 
-        # PSI Card / Subsystems
-        psi = status.get("psi", {})
-        some_psi = psi.get("some_avg10", 0.0)
-        full_psi = psi.get("full_avg10", 0.0)
-
-        # Update Subsystem Status Labels
+        # Subsystems
         self._update_status_badge(self.lbl_mem_sub, pct >= 96, pct >= 90)
         self._update_status_badge(self.lbl_cpu_sub, False, cpu_pct >= 90)
         self._update_status_badge(self.lbl_temp_sub, temp_c >= 90, temp_c >= 85)
         self._update_status_badge(self.lbl_disk_sub, False, root_pct >= 90)
         self._update_status_badge(self.lbl_net_sub, False, tot_net >= 900)
 
-        # Update Chart Sample History
+        # History Samples
         sample = {
             "timestamp": time.time(),
             "cpu": cpu_pct,
@@ -311,10 +306,9 @@ class OverviewPage(Gtk.ScrolledWindow):
         if len(self.history_samples) > 300:
             self.history_samples = self.history_samples[-300:]
         
-        self.lbl_chart_stats.set_text(f"RAM: {pct:.1f}%  |  CPU: {cpu_pct:.1f}%")
+        self.lbl_chart_stats.set_text(f"RAM: {pct:.1f}%  ::  CPU: {cpu_pct:.1f}%")
         self.chart_canvas.queue_draw()
 
-        # Fetch Top Processes & Events via IPC Client if available
         if self.ipc_client:
             self.ipc_client.fetch_processes_async(self._on_top_procs_response)
             self.ipc_client.fetch_events_async(5, self._on_recent_events_response)
@@ -323,20 +317,19 @@ class OverviewPage(Gtk.ScrolledWindow):
         for cls in ["normal", "warning", "critical"]:
             label.remove_css_class(cls)
         if is_critical:
-            label.set_label("Critical")
+            label.set_label("[● CRITICAL]")
             label.add_css_class("critical")
         elif is_warning:
-            label.set_label("Warning")
+            label.set_label("[● WARNING]")
             label.add_css_class("warning")
         else:
-            label.set_label("Normal")
+            label.set_label("[● NORMAL]")
             label.add_css_class("normal")
 
     def _on_top_procs_response(self, procs, err):
         if not procs or not isinstance(procs, list):
             return
 
-        # Clear existing rows
         while child := self.top_procs_list.get_first_child():
             self.top_procs_list.remove(child)
 
@@ -383,18 +376,18 @@ class OverviewPage(Gtk.ScrolledWindow):
             
             ts = ev.get("timestamp", "")
             time_str = ts.split("T")[-1][:8] if "T" in ts else ts[:8]
-            lbl_t = Gtk.Label(label=time_str)
+            lbl_t = Gtk.Label(label=f"[{time_str}]")
             lbl_t.add_css_class("aegis-subtext")
             row.append(lbl_t)
 
             source = ev.get("source", "system").upper()
-            lbl_src = Gtk.Label(label=source)
+            lbl_src = Gtk.Label(label=f"[● {source}]")
             lbl_src.add_css_class("status-badge")
             lbl_src.add_css_class("normal")
             row.append(lbl_src)
 
             msg = ev.get("message", "")
-            lbl_msg = Gtk.Label(label=msg[:32])
+            lbl_msg = Gtk.Label(label=msg[:30])
             lbl_msg.set_hexpand(True)
             lbl_msg.set_halign(Gtk.Align.START)
             row.append(lbl_msg)
@@ -402,21 +395,27 @@ class OverviewPage(Gtk.ScrolledWindow):
             self.recent_events_list.append(row)
 
     def _on_draw_chart(self, area, cr, width, height):
-        # Draw background grid
-        cr.set_source_rgba(1.0, 1.0, 1.0, 0.03)
-        for y in range(0, height, 30):
-            cr.move_to(0, y)
-            cr.line_to(width, y)
-            cr.stroke()
+        # Draw Background Dot Matrix Grid (Matrix of small dots)
+        cr.set_source_rgb(0.05, 0.05, 0.07)
+        cr.rectangle(0, 0, width, height)
+        cr.fill()
+
+        # Dot matrix grid
+        cr.set_source_rgba(1.0, 1.0, 1.0, 0.08)
+        grid_spacing = 16
+        for x in range(8, width, grid_spacing):
+            for y in range(8, height, grid_spacing):
+                cr.rectangle(x, y, 1.5, 1.5)
+                cr.fill()
 
         if not self.history_samples or len(self.history_samples) < 2:
             return
 
-        # Render Memory & CPU trend lines
-        pts_mem = []
-        pts_cpu = []
+        # Render Memory & CPU trend as Pixel Stepped Digital Lines
         n = len(self.history_samples)
         dx = width / max(1, n - 1)
+        pts_mem = []
+        pts_cpu = []
 
         for i, s in enumerate(self.history_samples):
             x = i * dx
@@ -425,18 +424,25 @@ class OverviewPage(Gtk.ScrolledWindow):
             pts_mem.append((x, y_mem))
             pts_cpu.append((x, y_cpu))
 
-        # Memory Line (White)
-        cr.set_source_rgba(0.95, 0.95, 0.96, 0.9)
+        # Memory Stepped Line (Pixel White)
+        cr.set_source_rgba(1.0, 1.0, 1.0, 0.95)
         cr.set_line_width(2.0)
         cr.move_to(pts_mem[0][0], pts_mem[0][1])
-        for x, y in pts_mem[1:]:
-            cr.line_to(x, y)
+        for i in range(1, len(pts_mem)):
+            prev_x, prev_y = pts_mem[i-1]
+            curr_x, curr_y = pts_mem[i]
+            # Digital Pixel Step (horizontal then vertical)
+            cr.line_to(curr_x, prev_y)
+            cr.line_to(curr_x, curr_y)
         cr.stroke()
 
-        # CPU Line (Muted Gray)
-        cr.set_source_rgba(0.6, 0.6, 0.65, 0.6)
+        # CPU Stepped Line (Pixel Gray)
+        cr.set_source_rgba(0.55, 0.55, 0.6, 0.7)
         cr.set_line_width(1.5)
         cr.move_to(pts_cpu[0][0], pts_cpu[0][1])
-        for x, y in pts_cpu[1:]:
-            cr.line_to(x, y)
+        for i in range(1, len(pts_cpu)):
+            prev_x, prev_y = pts_cpu[i-1]
+            curr_x, curr_y = pts_cpu[i]
+            cr.line_to(curr_x, prev_y)
+            cr.line_to(curr_x, curr_y)
         cr.stroke()

@@ -20,18 +20,18 @@ class MetricCard(Gtk.Frame):
         header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         
         self.icon = Gtk.Image.new_from_icon_name(icon_name)
-        self.icon.set_pixel_size(16)
+        self.icon.set_pixel_size(14)
         self.icon.add_css_class("dim-label")
         header_box.append(self.icon)
 
-        title_label = Gtk.Label(label=title.upper())
+        title_label = Gtk.Label(label=f":: {title.upper()} ::")
         title_label.add_css_class("aegis-card-header")
         title_label.set_halign(Gtk.Align.START)
         header_box.append(title_label)
 
         box.append(header_box)
 
-        # Value Label
+        # Value Label (Monospace pixel style)
         self.value_label = Gtk.Label(label="N/A")
         self.value_label.add_css_class("aegis-value-large")
         self.value_label.set_halign(Gtk.Align.START)
@@ -53,7 +53,7 @@ class MetricCard(Gtk.Frame):
     def set_metric(self, value_text: str, fraction: float = 0.0, subtext: str = ""):
         self.value_label.set_label(value_text)
         if subtext:
-            self.sub_label.set_label(subtext)
+            self.sub_label.set_label(subtext.upper())
             self.sub_label.set_visible(True)
         else:
             self.sub_label.set_visible(False)

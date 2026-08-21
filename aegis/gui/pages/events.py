@@ -7,7 +7,7 @@ from typing import List, Dict, Any, Optional, Set
 
 from aegis.gui.client import GUIIPCClient
 
-SEVERITY_OPTIONS = ["All Severities", "INFO", "WARNING", "CRITICAL / ERROR"]
+SEVERITY_OPTIONS = ["ALL SEVERITIES", "INFO", "WARNING", "CRITICAL / ERROR"]
 
 class EventsPage(Gtk.Box):
     def __init__(self, ipc_client: Optional[GUIIPCClient] = None):
@@ -38,13 +38,13 @@ class EventsPage(Gtk.Box):
         hdr_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         title_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
 
-        lbl_title = Gtk.Label(label="System Event Log")
+        lbl_title = Gtk.Label(label="AEGIS // EVENT_AUDIT_LOG")
         lbl_title.add_css_class("title-1")
         lbl_title.add_css_class("bold")
         lbl_title.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_title)
 
-        lbl_sub = Gtk.Label(label="Audit trail of resource warnings, kill actions, and protection events")
+        lbl_sub = Gtk.Label(label="Audit log of resource warnings, recovery actions, and system protection events.")
         lbl_sub.add_css_class("aegis-subtext")
         lbl_sub.set_halign(Gtk.Align.START)
         title_vbox.append(lbl_sub)
@@ -55,13 +55,13 @@ class EventsPage(Gtk.Box):
         spacer.set_hexpand(True)
         hdr_box.append(spacer)
 
-        btn_clear = Gtk.Button(label="Clear Log")
+        btn_clear = Gtk.Button(label="[ CLEAR LOG ]")
         btn_clear.add_css_class("action-btn-normal")
         btn_clear.connect("clicked", self._on_clear_clicked)
         hdr_box.append(btn_clear)
 
-        btn_refresh = Gtk.Button()
-        btn_refresh.set_icon_name("view-refresh-symbolic")
+        btn_refresh = Gtk.Button(label="[ REFRESH ]")
+        btn_refresh.add_css_class("tab-btn")
         btn_refresh.set_tooltip_text("Refresh Events")
         btn_refresh.connect("clicked", lambda b: self.refresh_events())
         hdr_box.append(btn_refresh)
@@ -124,7 +124,6 @@ class EventsPage(Gtk.Box):
                 added_new = True
 
         if added_new:
-            # Keep sorted descending by timestamp
             self.events.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
             self._render_filtered_events()
 
@@ -141,7 +140,6 @@ class EventsPage(Gtk.Box):
         self._render_filtered_events()
 
     def _render_filtered_events(self):
-        # 1. Clear ListBox
         while True:
             child = self.list_box.get_first_child()
             if not child:
@@ -156,11 +154,9 @@ class EventsPage(Gtk.Box):
             source = str(ev.get("source", ""))
             severity = str(ev.get("severity", "INFO")).upper()
 
-            # Filter Search Query
             if query and query not in msg.lower() and query not in source.lower():
                 continue
 
-            # Filter Severity
             if sev_idx == 1 and severity != "INFO":
                 continue
             elif sev_idx == 2 and severity != "WARNING":
@@ -184,9 +180,10 @@ class EventsPage(Gtk.Box):
 
         row = Adw.ActionRow()
         row.set_title(msg)
-        row.set_subtitle(f"Time: {time_part}  •  Source: {source}  •  Severity: {severity}")
+        row.set_subtitle(f"[{time_part}]  ::  SOURCE: {source}  ::  SEVERITY: {severity}")
 
-        badge = Gtk.Label(label=severity)
+        badge_text = f"[● {severity}]"
+        badge = Gtk.Label(label=badge_text)
         badge.add_css_class("status-badge")
         if severity in ("CRITICAL", "ERROR", "EMERGENCY"):
             badge.add_css_class("critical")

@@ -63,32 +63,34 @@ class SettingsPage(Adw.Bin):
         action_bar.append(toolbar_box)
 
         # Status Label
-        self.lbl_status = Gtk.Label(label="Configuration up to date")
-        self.lbl_status.add_css_class("dim-label")
+        self.lbl_status = Gtk.Label(label=":: CONFIGURATION SAVED ::") 
+        self.lbl_status.add_css_class("aegis-subtext")
         self.lbl_status.set_hexpand(True)
         self.lbl_status.set_halign(Gtk.Align.START)
         toolbar_box.append(self.lbl_status)
 
         # Reset Defaults Button
-        self.btn_reset = Gtk.Button(label="Reset Defaults")
+        self.btn_reset = Gtk.Button(label="[ RESET DEFAULTS ]")
+        self.btn_reset.add_css_class("action-btn-normal")
         self.btn_reset.connect("clicked", self._on_reset_clicked)
         toolbar_box.append(self.btn_reset)
 
         # Revert Button
-        self.btn_revert = Gtk.Button(label="Revert")
+        self.btn_revert = Gtk.Button(label="[ REVERT ]")
+        self.btn_revert.add_css_class("action-btn-normal")
         self.btn_revert.connect("clicked", self._on_revert_clicked)
         toolbar_box.append(self.btn_revert)
 
         # Save Changes Button
-        self.btn_save = Gtk.Button(label="Save Changes")
+        self.btn_save = Gtk.Button(label="[ SAVE CHANGES ]")
         self.btn_save.add_css_class("suggested-action")
         self.btn_save.connect("clicked", self._on_save_clicked)
         toolbar_box.append(self.btn_save)
 
     def _build_memory_group(self):
         group = Adw.PreferencesGroup()
-        group.set_title("Memory Thresholds")
-        group.set_description("RAM usage percentages triggering automated warnings, kills, and OOM escalation")
+        group.set_title(":: MEMORY THRESHOLDS ::")
+        group.set_description("RAM usage percentages triggering automated warnings, kills, and OOM escalation.")
         self.prefs_page.add(group)
 
         # Soft Memory Limit
@@ -123,8 +125,8 @@ class SettingsPage(Adw.Bin):
 
     def _build_cpu_temp_group(self):
         group = Adw.PreferencesGroup()
-        group.set_title("CPU &amp; Thermal Limits")
-        group.set_description("Resource alert limits and hardware temperature monitoring")
+        group.set_title(":: CPU & THERMAL LIMITS ::")
+        group.set_description("Resource alert limits and hardware temperature monitoring thresholds.")
         self.prefs_page.add(group)
 
         # CPU Alert Threshold
@@ -169,8 +171,8 @@ class SettingsPage(Adw.Bin):
 
     def _build_disk_net_group(self):
         group = Adw.PreferencesGroup()
-        group.set_title("Disk &amp; Network Alerts")
-        group.set_description("Storage usage and network throughput threshold settings")
+        group.set_title(":: DISK & NETWORK ALERTS ::")
+        group.set_description("Storage usage and network throughput threshold settings.")
         self.prefs_page.add(group)
 
         # Disk Space Alert
@@ -205,8 +207,8 @@ class SettingsPage(Adw.Bin):
 
     def _build_kill_group(self):
         group = Adw.PreferencesGroup()
-        group.set_title("Kill Policy &amp; Candidate Scoring")
-        group.set_description("Automated recovery policies and victim candidate calculation weights")
+        group.set_title(":: KILL POLICY & CANDIDATE SCORING ::")
+        group.set_description("Automated recovery policies and victim candidate calculation weights.")
         self.prefs_page.add(group)
 
         # Kill Policy
@@ -451,28 +453,28 @@ class SettingsPage(Adw.Bin):
 
         # Update UI feedback controls
         if self.is_offline:
-            self.banner.set_title("Aegis daemon is offline — Settings controls disabled")
+            self.banner.set_title("[ DAEMON OFFLINE ] — Settings controls are disabled")
             self.banner.set_revealed(True)
-            self.lbl_status.set_text("Offline")
+            self.lbl_status.set_text(":: DAEMON OFFLINE ::")
             self.btn_save.set_sensitive(False)
             self.btn_revert.set_sensitive(False)
             self.btn_reset.set_sensitive(False)
         elif not self.is_valid:
-            self.banner.set_title(f"Invalid Configuration: {val_error}")
+            self.banner.set_title(f"[ INVALID CONFIG ] {val_error}")
             self.banner.set_revealed(True)
-            self.lbl_status.set_text("Validation error")
+            self.lbl_status.set_text(":: VALIDATION ERROR ::")
             self.btn_save.set_sensitive(False)
             self.btn_revert.set_sensitive(self.is_dirty)
             self.btn_reset.set_sensitive(True)
         elif self.is_dirty:
             self.banner.set_revealed(False)
-            self.lbl_status.set_text("Unsaved changes")
+            self.lbl_status.set_text(":: UNSAVED CHANGES ::")
             self.btn_save.set_sensitive(True)
             self.btn_revert.set_sensitive(True)
             self.btn_reset.set_sensitive(True)
         else:
             self.banner.set_revealed(False)
-            self.lbl_status.set_text("Configuration up to date")
+            self.lbl_status.set_text(":: CONFIGURATION SAVED ::")
             self.btn_save.set_sensitive(False)
             self.btn_revert.set_sensitive(False)
             self.btn_reset.set_sensitive(True)
@@ -485,21 +487,21 @@ class SettingsPage(Adw.Bin):
 
         self.btn_save.set_sensitive(False)
         self.btn_revert.set_sensitive(False)
-        self.lbl_status.set_text("Saving changes...")
+        self.lbl_status.set_text(":: SAVING... ::")
 
         self.ipc_client.update_config_async(self.edited_config, self._on_save_response)
 
     def _on_save_response(self, res, err):
         if err:
             error_msg = str(err)
-            self.banner.set_title(f"Failed to apply configuration: {error_msg}")
+            self.banner.set_title(f"[ SAVE FAILED ] {error_msg}")
             self.banner.set_revealed(True)
-            self.lbl_status.set_text("Save failed")
+            self.lbl_status.set_text(":: SAVE FAILED ::")
             self._revalidate()
         elif res and res.get("updated"):
             self.server_config = copy.deepcopy(self.edited_config)
             self.banner.set_revealed(False)
-            self.lbl_status.set_text("✓ Configuration applied")
+            self.lbl_status.set_text(":: CONFIG APPLIED OK ::")
             self._revalidate()
 
     def _on_revert_clicked(self, button):

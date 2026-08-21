@@ -1,155 +1,177 @@
-/* Aegis Nothing-Inspired Monochrome Design System */
+/* Aegis Nothing-Inspired Pixelated Dot-Matrix Design System */
+
+* {
+    font-family: 'NDot57', 'NDot 57', 'Ndot', 'Dot Matrix', 'Courier New', 'DejaVu Sans Mono', 'Liberation Mono', monospace;
+    -gtk-icon-style: symbolic;
+}
 
 window, .main-window {
-    background-color: #0d0d0f;
+    background-color: #050507;
     color: #f4f4f5;
 }
 
 /* Sidebar Navigation */
 .sidebar {
-    background-color: #121215;
-    border-right: 1px solid #222226;
+    background-color: #0b0b0e;
+    border-right: 1px solid #1f1f24;
 }
 
 .sidebar-title {
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 2px;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 3px;
     color: #ffffff;
+    font-family: monospace;
 }
 
 .sidebar-subtitle {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
     color: #71717a;
     text-transform: uppercase;
+    font-family: monospace;
 }
 
 .sidebar-button {
     background: transparent;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: #a1a1aa;
-    font-weight: 500;
-    font-size: 13px;
-    transition: all 150ms ease;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    padding: 8px 12px;
+    color: #888890;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    transition: all 100ms ease;
+    font-family: monospace;
 }
 
 .sidebar-button:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: #141418;
     color: #ffffff;
+    border-color: #27272a;
 }
 
 .sidebar-button.active {
-    background-color: #27272a;
+    background-color: #1c1c22;
     color: #ffffff;
-    font-weight: 600;
+    border: 1px solid #3f3f46;
+    font-weight: 800;
 }
 
 /* Cards & Surfaces */
 .aegis-card, .card {
-    background-color: #18181b;
-    border: 1px solid #27272a;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background-color: #0d0d10;
+    border: 1px solid #222226;
+    border-radius: 4px;
+    box-shadow: none;
 }
 
 .aegis-card-header {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    color: #a1a1aa;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #888890;
     text-transform: uppercase;
+    font-family: monospace;
 }
 
 .aegis-card-title {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 14px;
+    font-weight: 800;
     color: #ffffff;
+    letter-spacing: 1px;
+    font-family: monospace;
 }
 
 .aegis-value-large {
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 1px;
     color: #ffffff;
+    font-family: monospace;
 }
 
 .aegis-value-medium {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1px;
     color: #ffffff;
+    font-family: monospace;
 }
 
 .aegis-subtext {
-    font-size: 12px;
-    color: #71717a;
+    font-size: 11px;
+    color: #666670;
+    letter-spacing: 1px;
+    font-family: monospace;
 }
 
-/* Status Badges */
+/* Pixelated Dot-Matrix Status Badges */
 .status-badge {
-    border-radius: 9999px;
-    padding: 4px 10px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    border-radius: 2px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
+    font-family: monospace;
 }
 
 .status-badge.normal, .status-badge.protected {
-    background-color: rgba(74, 222, 128, 0.12);
-    color: #4ade80;
-    border: 1px solid rgba(74, 222, 128, 0.3);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border: 1px solid #3f3f46;
 }
 
 .status-badge.warning {
-    background-color: rgba(251, 191, 36, 0.12);
-    color: #fbbf24;
-    border: 1px solid rgba(251, 191, 36, 0.3);
+    background-color: rgba(251, 191, 36, 0.15);
+    color: #facc15;
+    border: 1px solid rgba(251, 191, 36, 0.4);
 }
 
 .status-badge.critical, .status-badge.emergency {
-    background-color: rgba(248, 113, 113, 0.12);
-    color: #f87171;
-    border: 1px solid rgba(248, 113, 113, 0.3);
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ff3b30;
+    border: 1px solid rgba(239, 68, 68, 0.5);
 }
 
 .status-badge.expendable {
-    background-color: rgba(161, 161, 170, 0.12);
+    background-color: rgba(161, 161, 170, 0.1);
     color: #a1a1aa;
-    border: 1px solid rgba(161, 161, 170, 0.3);
+    border: 1px solid #27272a;
 }
 
-/* Level Bar Styling */
+/* Pixelated Block Level Bar */
 levelbar block.filled {
-    background-color: #e4e4e7;
-    border-radius: 4px;
+    background-color: #ffffff;
+    border-radius: 0px;
 }
 
 levelbar block.empty {
-    background-color: #27272a;
-    border-radius: 4px;
+    background-color: #1a1a20;
+    border-radius: 0px;
 }
 
 /* Process Table Rows */
 .process-row {
-    background-color: #18181b;
-    border-bottom: 1px solid #27272a;
-    padding: 10px 14px;
+    background-color: #0d0d10;
+    border-bottom: 1px solid #1b1b20;
+    padding: 8px 12px;
 }
 
 .process-row:hover {
-    background-color: #202024;
+    background-color: #15151a;
 }
 
 /* Search and Inputs */
 entry, searchentry {
-    background-color: #18181b;
-    border: 1px solid #27272a;
-    border-radius: 8px;
+    background-color: #0b0b0e;
+    border: 1px solid #222226;
+    border-radius: 2px;
     color: #ffffff;
+    font-family: monospace;
+    font-size: 12px;
 }
 
 entry:focus, searchentry:focus {
@@ -158,42 +180,51 @@ entry:focus, searchentry:focus {
 
 /* Action Buttons */
 button.action-btn-normal {
-    background-color: #27272a;
-    color: #f4f4f5;
-    border: 1px solid #3f3f46;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
+    background-color: #18181c;
+    color: #e4e4e7;
+    border: 1px solid #2d2d34;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: monospace;
+    padding: 4px 10px;
 }
 
 button.action-btn-normal:hover {
-    background-color: #3f3f46;
+    background-color: #27272a;
     color: #ffffff;
+    border-color: #52525b;
 }
 
 button.action-btn-danger {
-    background-color: rgba(248, 113, 113, 0.1);
-    color: #f87171;
-    border: 1px solid rgba(248, 113, 113, 0.3);
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
+    background-color: rgba(239, 68, 68, 0.12);
+    color: #ff453a;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    font-family: monospace;
+    padding: 4px 10px;
 }
 
 button.action-btn-danger:hover {
-    background-color: rgba(248, 113, 113, 0.25);
+    background-color: rgba(239, 68, 68, 0.3);
     color: #ffffff;
 }
 
-/* Tab Filter Buttons */
+/* Pixel Tab Filter Buttons */
 .tab-btn {
-    background-color: transparent;
-    border: 1px solid #27272a;
-    border-radius: 6px;
-    color: #a1a1aa;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 14px;
+    background-color: #08080a;
+    border: 1px solid #222226;
+    border-radius: 2px;
+    color: #71717a;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    padding: 5px 12px;
+    font-family: monospace;
 }
 
 .tab-btn:hover {
@@ -202,7 +233,7 @@ button.action-btn-danger:hover {
 }
 
 .tab-btn.active {
-    background-color: #27272a;
+    background-color: #1c1c22;
     color: #ffffff;
-    border-color: #52525b;
+    border-color: #f4f4f5;
 }
