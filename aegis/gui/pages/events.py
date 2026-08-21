@@ -14,7 +14,7 @@ class EventsPage(Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.ipc_client = ipc_client
 
-        self.events: List[Dict[str, Any]] = []
+        self.all_events: List[Dict[str, Any]] = []
         self.seen_ids: Set[str] = set()
 
         # Scrolled Container
@@ -109,8 +109,11 @@ class EventsPage(Gtk.Box):
         self.ipc_client = client
 
     def append_events(self, events: List[Dict[str, Any]]):
-        self.all_events.extend(events)
-        # Keep last 500
+        for e in events:
+            evt_id = e.get("id") or f"{e.get('timestamp')}-{e.get('message')}"
+            if evt_id not in self.seen_ids:
+                self.seen_ids.add(evt_id)
+                self.all_events.append(e)
         if len(self.all_events) > 500:
             self.all_events = self.all_events[-500:]
         self._apply_filter()
@@ -121,11 +124,11 @@ class EventsPage(Gtk.Box):
 
     def _on_events_response(self, events, err):
         if events is not None and isinstance(events, list):
-            self.all_events = events
-            self._apply_filter()
+            self.append_events(events)
 
     def _on_clear_clicked(self, button):
         self.all_events.clear()
+        self.seen_ids.clear()
         self._apply_filter()
 
     def _on_filter_changed(self, *args):
